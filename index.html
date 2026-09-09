@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- 自包含单文件版：CSS 与 JS 已内联，可直接双击打开或部署 -->
 <title>实验室物料库存与借阅管理平台</title>
+<script>window.__LAB_SYNC={"url":"https://yfyhpinyxhbbuustjdvk.supabase.co","key":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlmeWhwaW55eGhiYnV1c3RqZHZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTE4NDksImV4cCI6MjEwNDUyNzg0OX0.ZNj4BD7XnxJIHETejtZcMT9Nfm9UpZbjs4DkcYmJeGo"}</script>
 <style>
 /* ============ 基础变量 ============ */
 :root{
@@ -981,6 +982,12 @@ var DB = (function () {
       if (typeof Sync !== 'undefined') {
         var su = localStorage.getItem('lab_sync_url') || '';
         var sk = localStorage.getItem('lab_sync_key') || '';
+        // 部署版可把配置烤进页面（window.__LAB_SYNC），扫码即自动同步
+        if ((!su || !sk) && typeof window !== 'undefined' && window.__LAB_SYNC && window.__LAB_SYNC.url && window.__LAB_SYNC.key) {
+          su = window.__LAB_SYNC.url; sk = window.__LAB_SYNC.key;
+          localStorage.setItem('lab_sync_url', su);
+          localStorage.setItem('lab_sync_key', sk);
+        }
         if (su && sk) Sync.configure(su, sk);
       }
     } catch (e) { /* 忽略同步配置错误 */ }
