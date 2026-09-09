@@ -1,0 +1,2612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- 自包含单文件版：CSS 与 JS 已内联，可直接双击打开或部署 -->
+<title>实验室物料库存与借阅管理平台</title>
+<style>
+/* ============ 基础变量 ============ */
+:root{
+  --bg:#f4f6fa;
+  --panel:#ffffff;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --faint:#9ca3af;
+  --border:#e5e8ef;
+  --border-strong:#d8dde7;
+  --primary:#2563eb;
+  --primary-dark:#1d4ed8;
+  --primary-soft:#eff5ff;
+  --success:#16a34a;
+  --success-soft:#e8f7ee;
+  --warn:#d97706;
+  --warn-soft:#fdf3e3;
+  --danger:#dc2626;
+  --danger-soft:#fdecec;
+  --purple:#7c3aed;
+  --purple-soft:#f2ecff;
+  --side:#0f172a;
+  --side-2:#1b2639;
+  --radius:12px;
+  --shadow:0 1px 2px rgba(16,24,40,.04),0 8px 24px rgba(16,24,40,.06);
+}
+
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font:14px/1.5 "PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,p{margin:0;}
+button{font-family:inherit;font-size:14px;cursor:pointer;border:none;background:none;color:inherit;}
+input,select,textarea{font-family:inherit;font-size:14px;color:inherit;}
+table{border-collapse:collapse;width:100%;}
+.right{text-align:right;}
+.danger{color:var(--danger);}
+.warn{color:var(--warn);}
+
+/* ============ 图标 ============ */
+.ic{
+  width:16px;height:16px;display:inline-block;vertical-align:-3px;
+  background:currentColor;
+  -webkit-mask:var(--ic) center/contain no-repeat;
+  mask:var(--ic) center/contain no-repeat;
+}
+.ic-grid{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><rect x='3' y='3' width='7' height='7' rx='1'/><rect x='14' y='3' width='7' height='7' rx='1'/><rect x='3' y='14' width='7' height='7' rx='1'/><rect x='14' y='14' width='7' height='7' rx='1'/></svg>");}
+.ic-box{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><path d='M21 8l-9-5-9 5 9 5 9-5z'/><path d='M3 8v8l9 5 9-5V8'/><path d='M12 13v8'/></svg>");}
+.ic-swap{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><path d='M7 4v16M7 20l-3-3M7 20l3-3'/><path d='M17 20V4M17 4l-3 3M17 4l3 3'/></svg>");}
+.ic-list{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><path d='M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01'/></svg>");}
+.ic-cog{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><path d='M4 6h16M4 12h16M4 18h16'/><circle cx='9' cy='6' r='2' fill='white'/><circle cx='15' cy='12' r='2' fill='white'/><circle cx='8' cy='18' r='2' fill='white'/></svg>");}
+.ic-plus{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><path d='M12 5v14M5 12h14'/></svg>");}
+.ic-down{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><path d='M12 3v14M12 17l-4-4M12 17l4-4'/><path d='M4 21h16'/></svg>");}
+.ic-up{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><path d='M12 21V7M12 7L8 11M12 7l4 4'/><path d='M4 3h16'/></svg>");}
+.ic-warn{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><path d='M12 3l9 16H3l9-16z'/><path d='M12 9v5M12 17h.01'/></svg>");}
+.ic-coin{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><circle cx='12' cy='12' r='9'/><path d='M9 9l3 3 3-3M12 12v5M9.5 13.5h5M9.5 16h5'/></svg>");}
+
+/* ============ 布局 ============ */
+.app{display:flex;min-height:100vh;}
+
+.sidebar{
+  width:236px;flex:0 0 236px;background:var(--side);color:#cbd5e1;
+  display:flex;flex-direction:column;padding:18px 14px;position:sticky;top:0;height:100vh;
+}
+.brand{display:flex;gap:10px;align-items:center;padding:6px 8px 20px;}
+.brand-logo{
+  width:38px;height:38px;border-radius:10px;flex:0 0 38px;
+  background:linear-gradient(135deg,#3b82f6,#6366f1);
+  color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;letter-spacing:.5px;
+}
+.brand-text{display:flex;flex-direction:column;line-height:1.3;min-width:0;}
+.brand-text strong{color:#fff;font-size:15px;}
+.brand-text span{font-size:11px;color:#7c8ba1;}
+
+.nav{display:flex;flex-direction:column;gap:4px;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;
+  color:#b6c2d4;font-size:14px;text-align:left;transition:.15s;position:relative;
+}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff;}
+.nav-item.active{background:linear-gradient(90deg,rgba(59,130,246,.9),rgba(99,102,241,.75));color:#fff;box-shadow:0 4px 14px rgba(37,99,235,.35);}
+.nav-badge{
+  margin-left:auto;background:#ef4444;color:#fff;font-size:11px;line-height:16px;
+  min-width:18px;text-align:center;border-radius:9px;padding:0 5px;
+}
+.sidebar-foot{margin-top:auto;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);}
+.who{display:flex;gap:10px;align-items:center;padding:6px 8px;}
+.who-avatar{
+  width:34px;height:34px;border-radius:50%;background:#334155;color:#e2e8f0;
+  display:flex;align-items:center;justify-content:center;font-size:13px;
+}
+.who-text{display:flex;flex-direction:column;line-height:1.3;}
+.who-text strong{color:#fff;font-size:13px;}
+.who-text span{font-size:11px;color:#7c8ba1;}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column;}
+.topbar{
+  background:rgba(255,255,255,.9);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);padding:16px 26px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  position:sticky;top:0;z-index:20;
+}
+.topbar h1{font-size:19px;font-weight:600;}
+.topbar p{font-size:12.5px;color:var(--muted);margin-top:2px;}
+.topbar-right{display:flex;gap:10px;align-items:center;}
+.search-input{
+  width:290px;padding:9px 13px;border:1px solid var(--border-strong);border-radius:9px;
+  background:#fff;outline:none;transition:.15s;
+}
+.search-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
+.content{padding:22px 26px 40px;flex:1;}
+
+.view{display:none;animation:fade .22s ease;}
+.view.active{display:block;}
+@keyframes fade{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+/* ============ 按钮 ============ */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;padding:9px 15px;border-radius:9px;
+  font-size:13.5px;font-weight:500;transition:.15s;white-space:nowrap;
+}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.25);}
+.btn-primary:hover{background:var(--primary-dark);}
+.btn-ghost{background:#fff;border:1px solid var(--border-strong);color:var(--text);}
+.btn-ghost:hover{border-color:#b9c2d0;background:#fafbfd;}
+.btn-danger-ghost{background:#fff;border:1px solid #f3c4c4;color:var(--danger);}
+.btn-danger-ghost:hover{background:var(--danger-soft);}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-danger:hover{background:#b91c1c;}
+.btn:disabled{opacity:.5;cursor:not-allowed;}
+.link-btn{color:var(--primary);font-size:13px;padding:0;}
+.link-btn:hover{text-decoration:underline;}
+.icon-btn{width:30px;height:30px;border-radius:8px;color:var(--muted);font-size:15px;}
+.icon-btn:hover{background:#f1f3f7;color:var(--text);}
+.mini-btn{
+  padding:4px 9px;border-radius:6px;font-size:12.5px;color:var(--primary);
+  background:var(--primary-soft);transition:.15s;
+}
+.mini-btn:hover{background:#dbe8ff;}
+.mini-btn.gray{color:var(--muted);background:#f1f3f7;}
+.mini-btn.gray:hover{background:#e6e9ef;}
+.mini-btn.red{color:var(--danger);background:var(--danger-soft);}
+.mini-btn.red:hover{background:#fbdada;}
+.mini-btn.green{color:var(--success);background:var(--success-soft);}
+.mini-btn.green:hover{background:#dbf2e3;}
+
+/* ============ 统计卡 ============ */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:18px;}
+.stat-card{
+  background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 18px 16px;position:relative;overflow:hidden;box-shadow:var(--shadow);
+}
+.stat-label{font-size:12.5px;color:var(--muted);}
+.stat-value{font-size:27px;font-weight:700;margin:8px 0 6px;letter-spacing:-.5px;}
+.stat-foot{font-size:12px;color:var(--faint);}
+.stat-foot b{color:var(--text);}
+.stat-ic{
+  position:absolute;right:16px;top:16px;width:38px;height:38px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+}
+.stat-ic .ic{width:19px;height:19px;}
+.stat-ic.blue{background:var(--primary-soft);color:var(--primary);}
+.stat-ic.green{background:var(--success-soft);color:var(--success);}
+.stat-ic.orange{background:var(--warn-soft);color:var(--warn);}
+.stat-ic.purple{background:var(--purple-soft);color:var(--purple);}
+
+/* ============ 面板 ============ */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px;}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+.panel-head{
+  padding:14px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+}
+.panel-head h3{font-size:14.5px;font-weight:600;}
+.panel-sub{font-size:12px;color:var(--faint);}
+.panel-body{padding:16px 18px;}
+.panel-foot{padding:10px 18px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted);}
+
+/* ============ 表格 ============ */
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+.filters{display:flex;gap:8px;flex-wrap:wrap;}
+.filters select,.input-date,.field input,.field textarea,.field select{
+  padding:8px 11px;border:1px solid var(--border-strong);border-radius:8px;background:#fff;outline:none;transition:.15s;
+}
+.filters select:focus,.input-date:focus,.field input:focus,.field textarea:focus,.field select:focus{
+  border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);
+}
+.toolbar-right{display:flex;gap:8px;}
+.table-wrap{overflow-x:auto;}
+.table{font-size:13.5px;}
+.table thead th{
+  background:#fafbfd;color:var(--muted);font-weight:600;font-size:12.5px;
+  text-align:left;padding:11px 14px;border-bottom:1px solid var(--border);white-space:nowrap;
+}
+.table tbody td{padding:11px 14px;border-bottom:1px solid #f1f3f7;vertical-align:middle;}
+.table tbody tr:hover{background:#fafbfd;}
+.table tbody tr:last-child td{border-bottom:none;}
+.sortable{cursor:pointer;user-select:none;}
+.sortable:hover{color:var(--primary);}
+.sortable::after{content:"↕";opacity:.35;margin-left:4px;font-size:11px;}
+.sortable.asc::after{content:"↑";opacity:1;color:var(--primary);}
+.sortable.desc::after{content:"↓";opacity:1;color:var(--primary);}
+.cell-name{font-weight:500;}
+.cell-sub{font-size:11.5px;color:var(--faint);margin-top:2px;}
+.empty{padding:34px 0;text-align:center;color:var(--faint);font-size:13.5px;}
+.empty b{display:block;font-size:15px;color:var(--muted);margin-bottom:6px;}
+.td-actions{display:flex;gap:6px;justify-content:flex-end;}
+
+/* ============ 标签 ============ */
+.tag{display:inline-block;padding:3px 9px;border-radius:20px;font-size:12px;white-space:nowrap;}
+.tag-gray{background:#f1f3f7;color:#5b6472;}
+.tag-blue{background:var(--primary-soft);color:var(--primary);}
+.tag-green{background:var(--success-soft);color:var(--success);}
+.tag-orange{background:var(--warn-soft);color:var(--warn);}
+.tag-red{background:var(--danger-soft);color:var(--danger);}
+.tag-purple{background:var(--purple-soft);color:var(--purple);}
+.bar-mini{height:5px;border-radius:3px;background:#eef1f6;overflow:hidden;margin-top:5px;width:88px;}
+.bar-mini i{display:block;height:100%;border-radius:3px;}
+
+/* ============ 图表 ============ */
+.bar-list{display:flex;flex-direction:column;gap:12px;}
+.bar-row{display:grid;grid-template-columns:78px 1fr 52px;align-items:center;gap:10px;font-size:13px;}
+.bar-row .bar-name{color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bar-track{height:9px;background:#f0f2f7;border-radius:6px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,#3b82f6,#6366f1);transition:width .5s;}
+.bar-val{text-align:right;color:var(--text);font-variant-numeric:tabular-nums;}
+.trend{display:flex;align-items:flex-end;gap:10px;height:168px;padding-top:8px;}
+.trend-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;}
+.trend-stack{width:26px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;align-items:center;}
+.trend-stack i{width:100%;border-radius:3px 3px 0 0;display:block;min-height:2px;}
+.trend-stack .t-in{background:#3b82f6;}
+.trend-stack .t-out{background:#f59e0b;}
+.trend-stack .t-loan{background:#8b5cf6;}
+.trend-label{font-size:11.5px;color:var(--faint);white-space:nowrap;}
+.legend{display:flex;gap:14px;justify-content:center;margin-top:12px;font-size:12px;color:var(--muted);}
+.legend span{display:flex;align-items:center;gap:5px;}
+.legend i{width:9px;height:9px;border-radius:2px;display:inline-block;}
+
+/* ============ 表单 ============ */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 16px;}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0;}
+.field>span{font-size:12.5px;color:var(--muted);}
+.field input,.field textarea,.field select{width:100%;padding:9px 11px;}
+.field textarea{resize:vertical;line-height:1.7;font-family:inherit;}
+.field-full{grid-column:1 / -1;}
+.field-hint{font-size:11.5px;color:var(--faint);}
+
+/* ============ 弹窗 ============ */
+.modal-mask{
+  position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(2px);
+  display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;
+  animation:fade .18s ease;
+}
+.modal-mask[hidden]{display:none;}
+.modal{
+  background:#fff;border-radius:14px;width:640px;max-width:100%;max-height:88vh;
+  display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(15,23,42,.28);
+  animation:pop .2s cubic-bezier(.2,.8,.3,1);
+}
+@keyframes pop{from{opacity:0;transform:translateY(14px) scale(.98);}to{opacity:1;transform:none;}}
+.modal-head{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.modal-head h3{font-size:16px;font-weight:600;}
+.modal-body{padding:20px;overflow-y:auto;}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;background:#fafbfd;border-radius:0 0 14px 14px;}
+.modal-note{background:var(--primary-soft);border:1px solid #d8e6ff;color:#1e40af;padding:10px 12px;border-radius:8px;font-size:12.5px;margin-bottom:16px;line-height:1.6;}
+
+/* ============ 提示 ============ */
+.toast-root{position:fixed;top:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:10px;}
+.toast{
+  background:#fff;border:1px solid var(--border);border-left:4px solid var(--primary);
+  border-radius:10px;padding:12px 16px;box-shadow:0 10px 30px rgba(16,24,40,.14);
+  font-size:13.5px;min-width:200px;animation:slide .22s ease;
+}
+.toast.ok{border-left-color:var(--success);}
+.toast.warn{border-left-color:var(--warn);}
+.toast.err{border-left-color:var(--danger);}
+@keyframes slide{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:none;}}
+
+.data-row{display:flex;gap:10px;flex-wrap:wrap;}
+.tip-box{background:#f8fafc;border:1px dashed var(--border-strong);border-radius:10px;color:var(--muted);font-size:12.5px;line-height:1.8;margin-top:0;padding-top:0;padding-bottom:16px;}
+.sync-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px;}
+.sync-status{font-size:13px;color:var(--muted);}
+.sync-status:not(:empty){padding:8px 12px;background:#f8fafc;border:1px solid var(--border);border-radius:8px;display:inline-block;}
+.sync-pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;color:#047857;background:#d1fae5;border:1px solid #6ee7b7;border-radius:999px;padding:4px 10px;white-space:nowrap;}
+.sync-pill::before{content:"";width:7px;height:7px;border-radius:50%;background:#10b981;box-shadow:0 0 0 3px rgba(16,185,129,.2);}
+
+/* ============ 首页三大入口 ============ */
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:18px;}
+.quick-card{
+  background:var(--panel);border:1px solid var(--border);border-radius:14px;padding:20px 18px;
+  text-align:left;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);
+  transition:transform .18s ease,box-shadow .18s ease;position:relative;
+}
+.quick-card:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(16,24,40,.13);}
+.quick-card:active{transform:translateY(-1px);}
+.quick-ic{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;}
+.quick-ic .ic{width:24px;height:24px;}
+.quick-text{display:flex;flex-direction:column;gap:7px;align-items:flex-start;min-width:0;}
+.quick-title{font-size:17px;font-weight:600;}
+.quick-sub{font-size:12.5px;color:var(--muted);line-height:1.7;}
+.quick-badge{
+  align-self:flex-start;margin-top:2px;padding:4px 10px;border-radius:20px;font-size:12px;
+  background:var(--primary-soft);color:var(--primary);
+}
+.quick-badge.warn{background:var(--warn-soft);color:var(--warn);}
+.quick-badge.danger{background:var(--danger-soft);color:var(--danger);}
+.quick-card.borrow .quick-ic{background:var(--primary-soft);color:var(--primary);}
+.quick-card.return .quick-ic{background:var(--success-soft);color:var(--success);}
+.quick-card.stock .quick-ic{background:var(--purple-soft);color:var(--purple);}
+
+/* 还物料：待还清单 */
+.pending-list{display:flex;flex-direction:column;gap:10px;}
+.pending-item{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--border);
+  border-radius:10px;background:#fff;
+}
+.pending-item.overdue{border-color:#f3c4c4;background:var(--danger-soft);}
+.pending-main{flex:1;min-width:0;}
+.pending-main b{font-size:14px;}
+.pending-main .cell-sub{margin-top:3px;}
+.pending-item .mini-btn{flex:0 0 auto;padding:6px 12px;}
+
+/* ============ 登录 / 注册 ============ */
+.auth-mask{
+  position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;
+  background:linear-gradient(135deg,#0f172a,#1e293b 45%,#1e3a8a);
+}
+.auth-mask[hidden]{display:none;}
+.auth-card{
+  width:420px;max-width:100%;background:#fff;border-radius:16px;padding:26px 26px 18px;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);animation:pop .25s cubic-bezier(.2,.8,.3,1);
+  max-height:92vh;overflow-y:auto;
+}
+.auth-brand{display:flex;gap:12px;align-items:center;margin-bottom:18px;}
+.auth-brand-text{display:flex;flex-direction:column;line-height:1.35;}
+.auth-brand-text strong{font-size:17px;}
+.auth-brand-text span{font-size:11.5px;color:var(--faint);}
+.auth-tabs{display:flex;gap:6px;background:#f1f3f7;padding:4px;border-radius:10px;margin-bottom:18px;}
+.auth-tab{flex:1;padding:8px;border-radius:8px;font-size:14px;color:var(--muted);transition:.15s;}
+.auth-tab.active{background:#fff;color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(16,24,40,.12);}
+.auth-form{display:flex;flex-direction:column;gap:13px;}
+.auth-btn{width:100%;justify-content:center;padding:11px;font-size:15px;}
+.auth-foot{margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:11.5px;color:var(--faint);text-align:center;line-height:1.7;}
+.role-pick{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.role-opt{border:1px solid var(--border-strong);border-radius:10px;padding:12px;text-align:left;transition:.15s;}
+.role-opt.on{border-color:var(--primary);background:var(--primary-soft);}
+.role-opt b{display:block;font-size:14px;margin-bottom:3px;}
+.role-opt span{font-size:11.5px;color:var(--muted);line-height:1.55;}
+.auth-tip{background:#f8fafc;border:1px dashed var(--border-strong);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.75;}
+.auth-label{font-size:13px;color:var(--muted);font-weight:600;}
+.auth-err{color:var(--danger);font-size:12.5px;min-height:16px;line-height:1.5;}
+
+/* 侧栏退出 */
+.who-out{margin-left:auto;font-size:11.5px;color:#94a3b8;padding:4px 9px;border-radius:6px;transition:.15s;}
+.who-out:hover{background:rgba(255,255,255,.08);color:#fff;}
+
+/* 用户管理 */
+.user-cfg{display:flex;flex-wrap:wrap;gap:12px;align-items:center;border-top:1px solid var(--border);}
+.cfg-line{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);}
+.cfg-input{width:130px;padding:6px 9px;border:1px solid var(--border-strong);border-radius:7px;}
+
+/* ============ 响应式 ============ */
+@media (max-width:1180px){
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .chart-grid{grid-template-columns:1fr;}
+}
+@media (max-width:860px){
+  .sidebar{display:none;}
+  .topbar{flex-direction:column;align-items:stretch;}
+  .topbar-right{justify-content:space-between;}
+  .search-input{width:100%;}
+  .content{padding:16px;}
+  .form-grid{grid-template-columns:1fr;}
+  .quick-grid{grid-template-columns:1fr;}
+  .quick-card{flex-direction:row;align-items:center;gap:14px;padding:16px;}
+  .quick-card .quick-ic{flex:0 0 46px;}
+  .quick-text{display:flex;flex-direction:column;gap:4px;}
+}
+
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- 侧边导航 -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-logo">LB</div>
+      <div class="brand-text">
+        <strong id="brandName">实验室物料库</strong>
+        <span>库存 · 借阅 · 溯源</span>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <button class="nav-item active" data-view="dashboard"><i class="ic ic-grid"></i>库存看板</button>
+      <button class="nav-item" data-view="items"><i class="ic ic-box"></i>物料管理</button>
+      <button class="nav-item" data-view="loans"><i class="ic ic-swap"></i>借阅管理<span class="nav-badge" id="navBadge" hidden>0</span></button>
+      <button class="nav-item" data-view="logs"><i class="ic ic-list"></i>操作流水</button>
+      <button class="nav-item" data-view="settings"><i class="ic ic-cog"></i>系统设置</button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="who">
+        <div class="who-avatar" id="whoAvatar">未</div>
+        <div class="who-text">
+          <strong id="whoName">未登录</strong>
+          <span id="whoRole">请先登录</span>
+        </div>
+        <button class="who-out" id="btnLogout" title="退出登录">退出</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- 主区域 -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 id="pageTitle">库存看板</h1>
+        <p id="pageDesc">实验室物料实时状态总览</p>
+      </div>
+      <div class="topbar-right">
+        <span class="sync-pill" id="syncPill" hidden>已同步</span>
+        <input type="search" id="globalSearch" class="search-input" placeholder="搜索物料 / 借用人 / 编号…" autocomplete="off">
+        <button class="btn btn-primary" id="btnQuickAdd"><i class="ic ic-plus"></i>新增物料</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- ============ 看板 ============ -->
+      <section class="view active" id="view-dashboard">
+        <div class="quick-grid">
+          <button class="quick-card borrow" data-quick="borrow">
+            <div class="quick-ic"><i class="ic ic-swap"></i></div>
+            <div class="quick-text">
+              <div class="quick-title">借物料</div>
+              <div class="quick-sub">登记借出，自动扣减库存<br>记录借用人、用途与应还日期</div>
+              <span class="quick-badge" id="qbBorrow">登记借出</span>
+            </div>
+          </button>
+          <button class="quick-card return" data-quick="return">
+            <div class="quick-ic"><i class="ic ic-up"></i></div>
+            <div class="quick-text">
+              <div class="quick-title">还物料</div>
+              <div class="quick-sub">一键归还，库存自动回补<br>支持部分归还与续借</div>
+              <span class="quick-badge warn" id="qbReturn">待还 0 笔</span>
+            </div>
+          </button>
+          <button class="quick-card stock" data-quick="stock">
+            <div class="quick-ic"><i class="ic ic-grid"></i></div>
+            <div class="quick-text">
+              <div class="quick-title">物料情况</div>
+              <div class="quick-sub">查看库存、位置与效期<br>低库存自动预警提醒</div>
+              <span class="quick-badge danger" id="qbStock">0 项预警</span>
+            </div>
+          </button>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card">
+            <div class="stat-label">物料种类</div>
+            <div class="stat-value" id="statKinds">0</div>
+            <div class="stat-foot">库存总数量 <b id="statQty">0</b></div>
+            <div class="stat-ic blue"><i class="ic ic-box"></i></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">库存总值</div>
+            <div class="stat-value" id="statValue">¥0</div>
+            <div class="stat-foot">按当前单价估算</div>
+            <div class="stat-ic green"><i class="ic ic-coin"></i></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">低库存预警</div>
+            <div class="stat-value warn" id="statLow">0</div>
+            <div class="stat-foot">低于安全库存，需补货</div>
+            <div class="stat-ic orange"><i class="ic ic-warn"></i></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">在借未还</div>
+            <div class="stat-value" id="statLoan">0</div>
+            <div class="stat-foot">逾期 <b class="danger" id="statOverdue">0</b> 笔</div>
+            <div class="stat-ic purple"><i class="ic ic-swap"></i></div>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="panel">
+            <div class="panel-head"><h3>分类库存分布</h3><span class="panel-sub">按物料种类统计</span></div>
+            <div class="panel-body" id="chartCategory"></div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>近 7 日操作趋势</h3><span class="panel-sub">入库 / 出库 / 借阅</span></div>
+            <div class="panel-body" id="chartTrend"></div>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="panel">
+            <div class="panel-head"><h3>低库存清单</h3><button class="link-btn" data-goto="items" data-filter="low">查看全部</button></div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead><tr><th>物料</th><th>位置</th><th class="right">当前</th><th class="right">安全线</th><th>状态</th></tr></thead>
+                <tbody id="listLow"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>借阅动态</h3><button class="link-btn" data-goto="loans">查看全部</button></div>
+            <div class="table-wrap">
+              <table class="table">
+                <thead><tr><th>物料</th><th>借用人</th><th>应还日期</th><th>状态</th></tr></thead>
+                <tbody id="listDue"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 物料管理 ============ -->
+      <section class="view" id="view-items">
+        <div class="toolbar">
+          <div class="filters">
+            <select id="fCategory"><option value="">全部分类</option></select>
+            <select id="fLocation"><option value="">全部位置</option></select>
+            <select id="fStock">
+              <option value="">全部库存状态</option>
+              <option value="low">低库存预警</option>
+              <option value="out">已耗尽</option>
+              <option value="expire">近效期 / 过期</option>
+              <option value="normal">库存充足</option>
+            </select>
+            <button class="btn btn-ghost" id="btnResetFilter">重置</button>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-ghost" id="btnExportItems"><i class="ic ic-down"></i>导出 CSV</button>
+            <button class="btn btn-primary" id="btnAddItem"><i class="ic ic-plus"></i>新增物料</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="table-wrap">
+            <table class="table" id="itemTable">
+              <thead>
+                <tr>
+                  <th class="sortable" data-sort="code">编号</th>
+                  <th class="sortable" data-sort="name">物料名称</th>
+                  <th class="sortable" data-sort="category">分类</th>
+                  <th>规格型号</th>
+                  <th class="sortable" data-sort="location">存放位置</th>
+                  <th class="sortable right" data-sort="quantity">库存</th>
+                  <th class="right">安全线</th>
+                  <th class="sortable right" data-sort="expiry">有效期至</th>
+                  <th>状态</th>
+                  <th class="right">操作</th>
+                </tr>
+              </thead>
+              <tbody id="itemRows"></tbody>
+            </table>
+          </div>
+          <div class="panel-foot"><span id="itemCount">共 0 条</span></div>
+        </div>
+      </section>
+
+      <!-- ============ 借阅管理 ============ -->
+      <section class="view" id="view-loans">
+        <div class="toolbar">
+          <div class="filters">
+            <select id="fLoanStatus">
+              <option value="">全部状态</option>
+              <option value="borrowing">借用中</option>
+              <option value="partial">部分归还</option>
+              <option value="overdue">已逾期</option>
+              <option value="returned">已归还</option>
+            </select>
+            <select id="fBorrower"><option value="">全部借用人</option></select>
+            <button class="btn btn-ghost" id="btnResetLoanFilter">重置</button>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-ghost" id="btnExportLoans"><i class="ic ic-down"></i>导出 CSV</button>
+            <button class="btn btn-primary" id="btnAddLoan"><i class="ic ic-plus"></i>登记借用</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>借用单号</th>
+                  <th>物料</th>
+                  <th class="right">数量</th>
+                  <th>借用人</th>
+                  <th>借出时间</th>
+                  <th>应还时间</th>
+                  <th>实际归还</th>
+                  <th>用途</th>
+                  <th>状态</th>
+                  <th class="right">操作</th>
+                </tr>
+              </thead>
+              <tbody id="loanRows"></tbody>
+            </table>
+          </div>
+          <div class="panel-foot"><span id="loanCount">共 0 条</span></div>
+        </div>
+      </section>
+
+      <!-- ============ 操作流水 ============ -->
+      <section class="view" id="view-logs">
+        <div class="toolbar">
+          <div class="filters">
+            <select id="fLogType">
+              <option value="">全部类型</option>
+              <option value="入库">入库</option>
+              <option value="出库">出库</option>
+              <option value="借出">借出</option>
+              <option value="归还">归还</option>
+              <option value="新增">新增</option>
+              <option value="编辑">编辑</option>
+              <option value="删除">删除</option>
+            </select>
+            <input type="date" id="fLogDate" class="input-date">
+            <button class="btn btn-ghost" id="btnResetLogFilter">重置</button>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-ghost" id="btnExportLogs"><i class="ic ic-down"></i>导出 CSV</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="table-wrap">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>时间</th>
+                  <th>类型</th>
+                  <th>物料</th>
+                  <th class="right">变动</th>
+                  <th class="right">变动后</th>
+                  <th>操作员</th>
+                  <th>备注</th>
+                </tr>
+              </thead>
+              <tbody id="logRows"></tbody>
+            </table>
+          </div>
+          <div class="panel-foot"><span id="logCount">共 0 条</span></div>
+        </div>
+      </section>
+
+      <!-- ============ 设置 ============ -->
+      <section class="view" id="view-settings">
+        <div class="chart-grid">
+          <div class="panel">
+            <div class="panel-head"><h3>实验室信息</h3></div>
+            <div class="panel-body form-grid">
+              <label class="field"><span>实验室名称</span><input id="setLabName" type="text" placeholder="如：材料分析与测试中心"></label>
+              <label class="field"><span>默认操作员</span><input id="setAdmin" type="text" placeholder="用于流水记录署名"></label>
+              <label class="field"><span>默认借期（天）</span><input id="setDays" type="number" min="1" max="365" value="14"></label>
+              <label class="field"><span>低库存提前预警（天）</span><input id="setExpireDays" type="number" min="1" max="365" value="30"></label>
+              <div class="field field-full"><button class="btn btn-primary" id="btnSaveSettings">保存设置</button></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head"><h3>字典维护</h3><span class="panel-sub">一行一个，回车分隔</span></div>
+            <div class="panel-body form-grid">
+              <label class="field field-full"><span>物料分类</span><textarea id="setCategories" rows="4"></textarea></label>
+              <label class="field field-full"><span>存放位置</span><textarea id="setLocations" rows="4"></textarea></label>
+              <div class="field field-full"><button class="btn btn-primary" id="btnSaveDict">保存字典</button></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>用户管理</h3><span class="panel-sub">管理员可调整角色、重置密码、注销账号</span></div>
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th>姓名</th><th>学号 / 工号</th><th>角色</th><th>手机号</th><th>最近登录</th><th class="right">操作</th></tr></thead>
+              <tbody id="userRows"></tbody>
+            </table>
+          </div>
+          <div class="panel-body user-cfg">
+            <label class="cfg-line"><input type="checkbox" id="setAllowReg"> 允许学生自行注册</label>
+            <label class="cfg-line">管理员注册码 <input type="text" id="setAdminCode" class="cfg-input"></label>
+            <button class="btn btn-primary" id="btnSaveUserCfg">保存注册设置</button>
+            <span class="cell-sub">注册码用于注册管理员账号，请妥善保管，可随时修改。</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>数据同步（多设备共享）</h3><span class="panel-sub">连接 Supabase 后，所有扫码设备共享同一份数据</span></div>
+          <div class="panel-body form-grid">
+            <label class="field field-full"><span>Supabase 项目 URL</span><input id="syncUrl" type="text" placeholder="https://xxxx.supabase.co" autocomplete="off"></label>
+            <label class="field field-full"><span>Anon 公开密钥（apikey）</span><input id="syncKey" type="password" placeholder="eyJhbGciOi..." autocomplete="off"></label>
+            <div class="field field-full sync-actions">
+              <button class="btn btn-primary" id="btnSyncTest">连接测试</button>
+              <button class="btn btn-primary" id="btnSyncSave">保存并启用</button>
+              <button class="btn btn-ghost" id="btnSyncNow">立即同步（拉取）</button>
+              <button class="btn btn-danger-ghost" id="btnSyncOff">关闭同步</button>
+            </div>
+            <div class="field field-full"><span id="syncStatus" class="sync-status">当前：未启用同步（数据仅存本机）</span></div>
+          </div>
+          <div class="panel-body tip-box">
+            <b>如何开启：</b>① 注册免费 Supabase 账号（无需信用卡）；② 新建项目，在 SQL Editor 执行本仓库附带的 <code>supabase-schema.sql</code> 建表；③ 在 Project Settings → API 复制 <b>Project URL</b> 与 <b>anon public</b> 密钥，粘贴到上方即可。
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h3>数据管理</h3><span class="panel-sub">数据保存在本机浏览器，建议定期备份</span></div>
+          <div class="panel-body data-row">
+            <button class="btn btn-ghost" id="btnExportAll"><i class="ic ic-down"></i>导出全部数据（JSON 备份）</button>
+            <button class="btn btn-ghost" id="btnImportAll"><i class="ic ic-up"></i>导入备份</button>
+            <input type="file" id="fileImport" accept="application/json" hidden>
+            <button class="btn btn-ghost" id="btnSeed">载入示例数据</button>
+            <button class="btn btn-danger-ghost" id="btnClear">清空所有数据</button>
+          </div>
+          <div class="panel-body tip-box">
+            <b>多人协作提示：</b>当前版本数据保存在各自的浏览器本地。如需全实验室共享，可在服务器上部署一份，或用「导出 JSON → 由管理员导入」的方式定期同步；后续接入后端数据库即可实现实时协作。
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- 登录 / 注册 -->
+<div class="auth-mask" id="authMask" hidden>
+  <div class="auth-card">
+    <div class="auth-brand">
+      <div class="brand-logo">LB</div>
+      <div class="auth-brand-text">
+        <strong id="authLabName">实验室物料库</strong>
+        <span>库存 · 借阅 · 溯源</span>
+      </div>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" data-auth="login">登录</button>
+      <button class="auth-tab" data-auth="register">注册</button>
+    </div>
+    <div id="authBody"></div>
+    <div class="auth-foot">数据保存在本机浏览器，换设备请用「导出 JSON 备份」迁移</div>
+  </div>
+</div>
+
+<!-- 弹窗 -->
+<div class="modal-mask" id="modal" hidden>
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">标题</h3>
+      <button class="icon-btn" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<div class="toast-root" id="toastRoot"></div>
+
+<script>
+/* =========================================================
+ * 数据同步适配器：通过 Supabase REST API 实现多设备共享
+ * 不依赖任何外部 SDK，仅用浏览器原生 fetch
+ * 数据模型：每张表 = (id 主键, data jsonb, updated_at)
+ *   单行设置用固定 id = 'singleton'
+ * ========================================================= */
+var Sync = (function () {
+  var cfg = { url: '', key: '', enabled: false };
+  // 集合名 -> Supabase 表名
+  var TABLES = {
+    items: 'lab_items',
+    loans: 'lab_loans',
+    logs: 'lab_logs',
+    users: 'lab_users',
+    settings: 'lab_settings'
+  };
+
+  function headers(extra) {
+    var h = {
+      'apikey': cfg.key,
+      'Authorization': 'Bearer ' + cfg.key,
+      'Content-Type': 'application/json'
+    };
+    if (extra) Object.keys(extra).forEach(function (k) { h[k] = extra[k]; });
+    return h;
+  }
+  function endpoint(table) {
+    return cfg.url.replace(/\/+$/, '') + '/rest/v1/' + table;
+  }
+
+  function configure(url, key) {
+    cfg.url = (url || '').trim();
+    cfg.key = (key || '').trim();
+    cfg.enabled = !!(cfg.url && cfg.key);
+    return cfg.enabled;
+  }
+  function isEnabled() { return cfg.enabled; }
+
+  /** 连接测试：对 settings 表做一次只读查询 */
+  async function test() {
+    if (!cfg.enabled) return '未配置地址或密钥';
+    try {
+      var r = await fetch(endpoint('lab_settings') + '?select=id&limit=1', { headers: headers() });
+      if (!r.ok) return '连接失败：HTTP ' + r.status + '（请确认地址/密钥正确，且已执行建表 SQL）';
+      return true;
+    } catch (e) { return '网络错误：' + e.message; }
+  }
+
+  /** 批量 upsert 一个集合（按 id 合并，last-write-wins） */
+  async function pushRows(collection, rows) {
+    if (!cfg.enabled || !rows || !rows.length) return false;
+    var table = TABLES[collection];
+    if (!table) return false;
+    var payload = rows.map(function (rec) {
+      return { id: rec.id, data: rec, updated_at: new Date().toISOString() };
+    });
+    try {
+      var r = await fetch(endpoint(table), {
+        method: 'POST',
+        headers: headers({ 'Prefer': 'resolution=merge-duplicates' }),
+        body: JSON.stringify(payload)
+      });
+      if (!r.ok) { var t = await r.text(); console.warn('[sync] push ' + collection + ' 失败', r.status, t); return false; }
+      return true;
+    } catch (e) { console.warn('[sync] push ' + collection + ' 网络错误', e); return false; }
+  }
+
+  /** 设置（单行）upsert */
+  async function pushSettings(obj) {
+    if (!cfg.enabled || !obj) return false;
+    try {
+      var r = await fetch(endpoint('lab_settings'), {
+        method: 'POST',
+        headers: headers({ 'Prefer': 'resolution=merge-duplicates' }),
+        body: JSON.stringify([{ id: 'singleton', data: obj, updated_at: new Date().toISOString() }])
+      });
+      if (!r.ok) { console.warn('[sync] push settings 失败', r.status); return false; }
+      return true;
+    } catch (e) { console.warn('[sync] push settings 网络错误', e); return false; }
+  }
+
+  /** 删除远端某行 */
+  async function removeRow(collection, id) {
+    if (!cfg.enabled || !id) return false;
+    var table = TABLES[collection];
+    if (!table) return false;
+    try {
+      var r = await fetch(endpoint(table) + '?id=eq.' + encodeURIComponent(id), { method: 'DELETE', headers: headers() });
+      if (!r.ok) { console.warn('[sync] delete ' + collection + ' 失败', r.status); return false; }
+      return true;
+    } catch (e) { console.warn('[sync] delete ' + collection + ' 网络错误', e); return false; }
+  }
+
+  /** 拉取全部集合 */
+  async function pull() {
+    var out = { items: [], loans: [], logs: [], users: [], settings: null };
+    for (var c in TABLES) {
+      if (c === 'settings') continue;
+      try {
+        var r = await fetch(endpoint(TABLES[c]) + '?select=id,data,updated_at&order=updated_at.asc', { headers: headers() });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        var rows = await r.json();
+        out[c] = (rows || []).map(function (x) { return x.data; });
+      } catch (e) { console.warn('[sync] pull ' + c + ' 失败', e); out[c] = null; }
+    }
+    try {
+      var rs = await fetch(endpoint('lab_settings') + '?select=data&id=eq.singleton', { headers: headers() });
+      if (rs.ok) {
+        var s = await rs.json();
+        out.settings = (s && s[0] && s[0].data) || null;
+      }
+    } catch (e) { console.warn('[sync] pull settings 失败', e); out.settings = null; }
+    return out;
+  }
+
+  return {
+    configure: configure,
+    isEnabled: isEnabled,
+    test: test,
+    pushRows: pushRows,
+    pushSettings: pushSettings,
+    removeRow: removeRow,
+    pull: pull
+  };
+})();
+if (typeof window !== 'undefined') window.Sync = Sync;
+
+</script>
+<script>
+/* =========================================================
+ * 数据层：localStorage 持久化 + 库存 / 借阅业务逻辑
+ * 所有写操作都会自动生成一条不可篡改的操作流水
+ * ========================================================= */
+var DB = (function () {
+  var KEY = 'lab_inventory_v1';
+
+  var DEFAULT_SETTINGS = {
+    labName: '实验室物料库',
+    operator: '管理员',
+    borrowDays: 14,
+    expireWarnDays: 30,
+    adminCode: 'ADMIN2026',
+    allowStudentRegister: true,
+    categories: ['耗材', '试剂', '器材', '仪器', '防护用品', '电子元件', '其他'],
+    locations: ['A 区试剂柜', 'B 区耗材柜', 'C 区仪器间', 'D 区冷藏柜', '危化品柜', '干燥箱']
+  };
+
+  var state = { settings: null, items: [], loans: [], logs: [], users: [], session: '' };
+
+  /* ---------- 基础工具 ---------- */
+  function uid(prefix) {
+    return (prefix || 'id') + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+  function pad(n) { return n < 10 ? '0' + n : '' + n; }
+  function nowStr() {
+    var d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()) +
+      ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+  function dateStr(d) {
+    d = d || new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  }
+  /** "YYYY-MM-DD HH:mm" -> "YYYY-MM-DDTHH:mm"（用于 datetime-local） */
+  function toInput(str) { return str ? str.replace(' ', 'T') : ''; }
+  /** 字符串 -> Date（按本地时间解析） */
+  function toDate(str) { return str ? new Date(str.replace(' ', 'T')) : null; }
+  function daysLeft(str) {
+    var d = toDate(str); if (!d) return null;
+    return Math.ceil((d.getTime() - Date.now()) / 86400000);
+  }
+  function addDays(baseStr, n) {
+    var d = toDate(baseStr) || new Date();
+    d.setDate(d.getDate() + n);
+    return dateStr(d);
+  }
+  function num(v, def) {
+    var n = parseFloat(v);
+    return isNaN(n) ? (def === undefined ? 0 : def) : n;
+  }
+  function money(v) {
+    v = num(v);
+    if (Math.abs(v) >= 10000) return '¥' + (v / 10000).toFixed(1) + '万';
+    return '¥' + v.toFixed(v % 1 === 0 ? 0 : 2);
+  }
+  function escapeHtml(s) {
+    return String(s === undefined || s === null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  /* ---------- 持久化 ---------- */
+  function load() {
+    try {
+      var raw = localStorage.getItem(KEY);
+      if (raw) {
+        var data = JSON.parse(raw);
+        state.settings = Object.assign({}, DEFAULT_SETTINGS, data.settings || {});
+        state.items = data.items || [];
+        state.loans = data.loans || [];
+        state.logs = data.logs || [];
+        state.users = data.users || [];
+        state.session = data.session || '';
+      }
+    } catch (e) { console.warn('读取本地数据失败', e); }
+    if (!state.settings) state.settings = Object.assign({}, DEFAULT_SETTINGS);
+    // 读取同步配置并初始化云端适配器
+    try {
+      if (typeof Sync !== 'undefined') {
+        var su = localStorage.getItem('lab_sync_url') || '';
+        var sk = localStorage.getItem('lab_sync_key') || '';
+        if (su && sk) Sync.configure(su, sk);
+      }
+    } catch (e) { /* 忽略同步配置错误 */ }
+    return state;
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(state)); }
+    catch (e) { console.error('保存失败', e); }
+    if (typeof Sync !== 'undefined' && Sync.isEnabled()) pushAll();
+  }
+  /** 将各集合推送到云端（按 id upsert，last-write-wins） */
+  function pushAll() {
+    if (typeof Sync === 'undefined' || !Sync.isEnabled()) return;
+    Sync.pushRows('items', state.items);
+    Sync.pushRows('loans', state.loans);
+    Sync.pushRows('logs', state.logs);
+    Sync.pushRows('users', state.users);
+    Sync.pushSettings(state.settings);
+  }
+  /** 保存同步配置到本地并启用（url/key 为空即关闭） */
+  function saveSyncConfig(url, key) {
+    localStorage.setItem('lab_sync_url', url || '');
+    localStorage.setItem('lab_sync_key', key || '');
+    var ok = (typeof Sync !== 'undefined') ? Sync.configure(url, key) : false;
+    return ok;
+  }
+  function syncEnabled() { return typeof Sync !== 'undefined' && Sync.isEnabled(); }
+  /** 从云端拉取最新数据并合并；若云端为空则把本地上传 */
+  async function syncPull() {
+    if (typeof Sync === 'undefined' || !Sync.isEnabled()) return false;
+    try {
+      var remote = await Sync.pull();
+      var changed = false;
+      ['items', 'loans', 'logs', 'users'].forEach(function (c) {
+        if (remote[c] && remote[c].length) { state[c] = remote[c]; changed = true; }
+      });
+      if (remote.settings) { state.settings = Object.assign({}, DEFAULT_SETTINGS, remote.settings); changed = true; }
+      if (changed) save(); else pushAll();
+      return true;
+    } catch (e) { console.warn('同步拉取失败', e); return false; }
+  }
+  function replace(data) {
+    state.settings = Object.assign({}, DEFAULT_SETTINGS, data.settings || {});
+    state.items = data.items || [];
+    state.loans = data.loans || [];
+    state.logs = data.logs || [];
+    state.users = data.users || [];
+    state.session = '';
+    save();
+  }
+  function clearAll() {
+    var keepUsers = state.users, keepSettings = state.settings;
+    state = {
+      settings: keepSettings || Object.assign({}, DEFAULT_SETTINGS),
+      items: [], loans: [], logs: [], users: keepUsers, session: ''
+    };
+    save();
+  }
+
+  /* ---------- 用户与权限 ---------- */
+  /** 轻量口令散列（前端演示级保护，避免明文落盘，不等于密码学安全） */
+  function hashPass(pw, salt) {
+    var s = String(pw) + '|labinv|' + (salt || '');
+    var h1 = 5381, h2 = 52711, h3 = 1471;
+    for (var i = 0; i < s.length; i++) {
+      var c = s.charCodeAt(i);
+      h1 = (((h1 << 5) + h1) ^ c) >>> 0;
+      h2 = (((h2 << 4) + h2) ^ (c + i)) >>> 0;
+      h3 = (((h3 << 3) + h3) ^ (c * 31 + i)) >>> 0;
+    }
+    return 'L1$' + h1.toString(36) + h2.toString(36) + h3.toString(36);
+  }
+  function findUser(key) {
+    key = String(key || '').trim().toLowerCase();
+    if (!key) return null;
+    for (var i = 0; i < state.users.length; i++) {
+      var u = state.users[i];
+      if (String(u.sid || '').toLowerCase() === key || String(u.name || '').toLowerCase() === key) return u;
+    }
+    return null;
+  }
+  function getUser(id) {
+    for (var i = 0; i < state.users.length; i++) if (state.users[i].id === id) return state.users[i];
+    return null;
+  }
+  function registerUser(data) {
+    var name = String(data.name || '').trim();
+    var sid = String(data.sid || '').trim();
+    var firstUser = state.users.length === 0;
+    var role = firstUser ? 'admin' : (data.role === 'admin' ? 'admin' : 'student');
+    var pw = String(data.password || '');
+    if (!name) return '请填写姓名';
+    if (!sid) return '请填写学号 / 工号';
+    if (pw.length < 6) return '密码至少 6 位';
+    if (pw !== String(data.confirm || '')) return '两次输入的密码不一致';
+    if (findUser(sid)) return '该学号 / 工号已注册';
+    if (role === 'admin' && !firstUser && String(data.code || '').trim() !== String(state.settings.adminCode || '')) {
+      return '管理员注册码不正确';
+    }
+    if (role === 'student' && state.settings.allowStudentRegister === false) {
+      return '当前未开放学生自助注册，请联系管理员';
+    }
+    var u = {
+      id: uid('u'),
+      name: name,
+      sid: sid,
+      phone: String(data.phone || '').trim(),
+      role: role,
+      pass: hashPass(pw, sid),
+      createdAt: nowStr(),
+      lastAt: ''
+    };
+    state.users.push(u);
+    state.session = u.id;
+    u.lastAt = nowStr();
+    save();
+    return u;
+  }
+  function login(key, pw) {
+    var u = findUser(key);
+    if (!u) return '账号不存在';
+    if (u.pass !== hashPass(pw, u.sid)) return '密码错误';
+    state.session = u.id;
+    u.lastAt = nowStr();
+    save();
+    return u;
+  }
+  function logout() { state.session = ''; save(); }
+  function currentUser() {
+    if (!state.session) return null;
+    return getUser(state.session);
+  }
+  function isAdmin() { var u = currentUser(); return !!u && u.role === 'admin'; }
+  function userCount() { return state.users.length; }
+  /** 管理员改角色 / 重置密码 / 删除 */
+  function setRole(id, role) {
+    var u = getUser(id); if (!u) return '用户不存在';
+    if (u.id === state.session && role !== 'admin' && state.users.filter(function (x) { return x.role === 'admin'; }).length <= 1) {
+      return '至少保留一名管理员';
+    }
+    u.role = role === 'admin' ? 'admin' : 'student'; save(); return true;
+  }
+  function resetPass(id, pw) {
+    var u = getUser(id); if (!u) return '用户不存在';
+    if (String(pw).length < 6) return '密码至少 6 位';
+    u.pass = hashPass(pw, u.sid); save(); return true;
+  }
+  function deleteUser(id) {
+    var u = getUser(id); if (!u) return '用户不存在';
+    if (u.id === state.session) return '不能删除当前登录的账号';
+    if (u.role === 'admin' && state.users.filter(function (x) { return x.role === 'admin'; }).length <= 1) {
+      return '至少保留一名管理员';
+    }
+    var used = state.loans.some(function (l) { return l.userId === id && l.returnedQty < l.quantity; });
+    if (used) return '该账号还有未归还的借用记录';
+    for (var i = 0; i < state.users.length; i++) if (state.users[i].id === id) { state.users.splice(i, 1); break; }
+    save();
+    if (typeof Sync !== 'undefined' && Sync.isEnabled()) Sync.removeRow('users', id);
+    return true;
+  }
+
+  /* ---------- 流水 ---------- */
+  function addLog(type, item, delta, before, after, operator, remark) {
+    state.logs.unshift({
+      id: uid('log'),
+      at: nowStr(),
+      type: type,
+      itemId: item ? item.id : '',
+      itemName: item ? item.name : '—',
+      delta: delta,
+      before: before,
+      after: after,
+      operator: operator || state.settings.operator || '系统',
+      remark: remark || ''
+    });
+    if (state.logs.length > 3000) state.logs.length = 3000;
+  }
+
+  /* ---------- 物料 ---------- */
+  function nextCode() {
+    var max = 0;
+    state.items.forEach(function (it) {
+      var m = /^M(\d+)$/.exec(it.code || '');
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    });
+    return 'M' + String(max + 1).padStart(4, '0');
+  }
+  function getItem(id) {
+    for (var i = 0; i < state.items.length; i++) if (state.items[i].id === id) return state.items[i];
+    return null;
+  }
+  function addItem(data, operator) {
+    var it = {
+      id: uid('item'),
+      code: (data.code || '').trim() || nextCode(),
+      name: (data.name || '').trim(),
+      category: data.category || '其他',
+      spec: data.spec || '',
+      unit: data.unit || '个',
+      quantity: num(data.quantity, 0),
+      safeMin: num(data.safeMin, 0),
+      location: data.location || '',
+      supplier: data.supplier || '',
+      price: num(data.price, 0),
+      lot: data.lot || '',
+      expiry: data.expiry || '',
+      remark: data.remark || '',
+      createdAt: nowStr(),
+      updatedAt: nowStr()
+    };
+    state.items.unshift(it);
+    addLog('新增', it, it.quantity, 0, it.quantity, operator, '新建物料档案');
+    save();
+    return it;
+  }
+  function updateItem(id, data, operator) {
+    var it = getItem(id); if (!it) return null;
+    var before = it.quantity;
+    ['code', 'name', 'category', 'spec', 'unit', 'location', 'supplier', 'lot', 'expiry', 'remark'].forEach(function (k) {
+      if (data[k] !== undefined) it[k] = String(data[k]).trim ? String(data[k]).trim() : data[k];
+    });
+    if (data.safeMin !== undefined) it.safeMin = num(data.safeMin);
+    if (data.price !== undefined) it.price = num(data.price);
+    if (data.quantity !== undefined && num(data.quantity) !== before) {
+      it.quantity = num(data.quantity);
+      addLog('编辑', it, it.quantity - before, before, it.quantity, operator, '手动修正库存');
+    } else {
+      addLog('编辑', it, 0, before, it.quantity, operator, '更新物料信息');
+    }
+    it.updatedAt = nowStr();
+    save();
+    return it;
+  }
+  function deleteItem(id, operator) {
+    var idx = -1;
+    for (var i = 0; i < state.items.length; i++) if (state.items[i].id === id) idx = i;
+    if (idx < 0) return false;
+    var it = state.items[idx];
+    var used = state.loans.some(function (l) { return l.itemId === id && l.returnedQty < l.quantity; });
+    if (used) return '该物料存在未归还的借用记录，无法删除';
+    state.items.splice(idx, 1);
+    addLog('删除', it, -it.quantity, it.quantity, 0, operator, '删除物料档案');
+    save();
+    if (typeof Sync !== 'undefined' && Sync.isEnabled()) Sync.removeRow('items', id);
+    return true;
+  }
+  /** 入库 / 出库：delta 为正入库，负出库 */
+  function stockChange(id, delta, operator, remark) {
+    var it = getItem(id); if (!it) return '物料不存在';
+    delta = num(delta);
+    if (delta === 0) return '数量不能为 0';
+    if (delta < 0 && it.quantity + delta < 0) return '库存不足，当前仅剩 ' + it.quantity + ' ' + it.unit;
+    var before = it.quantity;
+    it.quantity = Math.round((before + delta) * 1000) / 1000;
+    it.updatedAt = nowStr();
+    addLog(delta > 0 ? '入库' : '出库', it, delta, before, it.quantity, operator, remark);
+    save();
+    return true;
+  }
+
+  /* ---------- 借阅 ---------- */
+  function nextLoanNo() {
+    var max = 0;
+    state.loans.forEach(function (l) {
+      var m = /^B(\d+)$/.exec(l.no || '');
+      if (m) max = Math.max(max, parseInt(m[1], 10));
+    });
+    return 'B' + String(max + 1).padStart(4, '0');
+  }
+  function createLoan(data, operator) {
+    var it = getItem(data.itemId);
+    if (!it) return '请选择物料';
+    var qty = num(data.quantity);
+    if (qty <= 0) return '借用数量须大于 0';
+    if (qty > it.quantity) return '库存不足，当前可用 ' + it.quantity + ' ' + it.unit;
+    var at = nowStr();
+    var due = data.dueAt || addDays(at, num(state.settings.borrowDays, 14));
+    var loan = {
+      id: uid('loan'),
+      no: nextLoanNo(),
+      itemId: it.id,
+      itemCode: it.code,
+      itemName: it.name,
+      unit: it.unit,
+      quantity: qty,
+      returnedQty: 0,
+      borrower: (data.borrower || '').trim(),
+      contact: (data.contact || '').trim(),
+      purpose: (data.purpose || '').trim(),
+      borrowAt: data.borrowAt || at,
+      dueAt: /^\d{4}-\d{2}-\d{2}$/.test(due) ? due + ' 18:00' : due,
+      returnAt: '',
+      operator: operator || state.settings.operator,
+      userId: data.userId || '',
+      createdAt: at,
+      history: []
+    };
+    var before = it.quantity;
+    it.quantity = Math.round((before - qty) * 1000) / 1000;
+    it.updatedAt = at;
+    state.loans.unshift(loan);
+    addLog('借出', it, -qty, before, it.quantity, operator,
+      loan.borrower + ' 借用 ' + qty + it.unit + '，应还 ' + loan.dueAt.slice(0, 10));
+    save();
+    return loan;
+  }
+  function returnLoan(loanId, qty, operator, remark) {
+    var loan = null;
+    for (var i = 0; i < state.loans.length; i++) if (state.loans[i].id === loanId) loan = state.loans[i];
+    if (!loan) return '借用记录不存在';
+    var remain = loan.quantity - loan.returnedQty;
+    qty = num(qty);
+    if (qty <= 0) return '归还数量须大于 0';
+    if (qty > remain) return '超出未还数量（剩 ' + remain + ' ' + loan.unit + '）';
+    var it = getItem(loan.itemId);
+    loan.returnedQty = Math.round((loan.returnedQty + qty) * 1000) / 1000;
+    loan.history = loan.history || [];
+    loan.history.push({ at: nowStr(), qty: qty, operator: operator || state.settings.operator });
+    if (loan.returnedQty >= loan.quantity) loan.returnAt = nowStr();
+    if (it) {
+      var before = it.quantity;
+      it.quantity = Math.round((before + qty) * 1000) / 1000;
+      it.updatedAt = nowStr();
+      addLog('归还', it, qty, before, it.quantity, operator,
+        loan.borrower + ' 归还 ' + qty + it.unit + (remark ? ' · ' + remark : ''));
+    }
+    save();
+    return loan;
+  }
+  function extendLoan(loanId, days, operator) {
+    var loan = null;
+    for (var i = 0; i < state.loans.length; i++) if (state.loans[i].id === loanId) loan = state.loans[i];
+    if (!loan) return '借用记录不存在';
+    var base = loan.returnAt ? nowStr() : (loan.dueAt > nowStr() ? loan.dueAt : nowStr());
+    loan.dueAt = addDays(base, num(days, 7)) + ' 18:00';
+    loan.history = loan.history || [];
+    loan.history.push({ at: nowStr(), extend: num(days, 7), operator: operator || state.settings.operator });
+    save();
+    return loan;
+  }
+  function deleteLoan(loanId, operator) {
+    var idx = -1;
+    for (var i = 0; i < state.loans.length; i++) if (state.loans[i].id === loanId) idx = i;
+    if (idx < 0) return false;
+    var loan = state.loans[idx];
+    var remain = loan.quantity - loan.returnedQty;
+    var it = getItem(loan.itemId);
+    if (remain > 0 && it) {
+      var before = it.quantity;
+      it.quantity = Math.round((before + remain) * 1000) / 1000;
+      addLog('归还', it, remain, before, it.quantity, operator, '删除借用记录 ' + loan.no + '，未还数量回库');
+    }
+    state.loans.splice(idx, 1);
+    save();
+    if (typeof Sync !== 'undefined' && Sync.isEnabled()) Sync.removeRow('loans', loanId);
+    return true;
+  }
+  /** 动态计算借用状态 */
+  function loanStatus(loan) {
+    if (loan.returnedQty >= loan.quantity) return 'returned';
+    if (daysLeft(loan.dueAt) < 0) return 'overdue';
+    if (loan.returnedQty > 0) return 'partial';
+    return 'borrowing';
+  }
+  /** 动态计算物料库存状态 */
+  function itemStatus(it) {
+    if (it.quantity <= 0) return 'out';
+    if (it.quantity <= it.safeMin) return 'low';
+    if (it.expiry) {
+      var d = daysLeft(it.expiry);
+      if (d !== null && d <= num(state.settings.expireWarnDays, 30)) return 'expire';
+    }
+    return 'normal';
+  }
+
+  /* ---------- 统计 ---------- */
+  function stats() {
+    var kinds = state.items.length;
+    var qty = 0, value = 0, low = 0;
+    state.items.forEach(function (it) {
+      qty += num(it.quantity);
+      value += num(it.quantity) * num(it.price);
+      if (itemStatus(it) === 'low' || itemStatus(it) === 'out') low++;
+    });
+    var active = 0, overdue = 0;
+    state.loans.forEach(function (l) {
+      var s = loanStatus(l);
+      if (s !== 'returned') { active++; if (s === 'overdue') overdue++; }
+    });
+    return { kinds: kinds, qty: Math.round(qty * 100) / 100, value: value, low: low, active: active, overdue: overdue };
+  }
+
+  /* ---------- 导出 ---------- */
+  function csvCell(v) {
+    var s = String(v === undefined || v === null ? '' : v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+  function toCSV(headers, rows) {
+    var out = [headers.map(csvCell).join(',')];
+    rows.forEach(function (r) { out.push(r.map(csvCell).join(',')); });
+    return '\ufeff' + out.join('\r\n');
+  }
+  function download(filename, content, mime) {
+    var blob = new Blob([content], { type: (mime || 'text/plain') + ';charset=utf-8' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click();
+    setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+  }
+  function exportBackup() {
+    download('实验室物料备份_' + dateStr() + '.json', JSON.stringify(state, null, 2), 'application/json');
+  }
+
+  return {
+    KEY: KEY,
+    get state() { return state; },
+    get settings() { return state.settings; },
+    load: load, save: save, replace: replace, clearAll: clearAll,
+    saveSyncConfig: saveSyncConfig, syncEnabled: syncEnabled, syncPull: syncPull, pushAll: pushAll,
+    uid: uid, nowStr: nowStr, dateStr: dateStr, toInput: toInput, toDate: toDate,
+    daysLeft: daysLeft, addDays: addDays, num: num, money: money, escapeHtml: escapeHtml,
+    getItem: getItem, addItem: addItem, updateItem: updateItem, deleteItem: deleteItem,
+    stockChange: stockChange, nextCode: nextCode,
+    createLoan: createLoan, returnLoan: returnLoan, extendLoan: extendLoan,
+    deleteLoan: deleteLoan, loanStatus: loanStatus, itemStatus: itemStatus,
+    stats: stats, toCSV: toCSV, download: download, exportBackup: exportBackup,
+    hashPass: hashPass, findUser: findUser, getUser: getUser,
+    registerUser: registerUser, login: login, logout: logout,
+    currentUser: currentUser, isAdmin: isAdmin, userCount: userCount,
+    setRole: setRole, resetPass: resetPass, deleteUser: deleteUser
+  };
+})();
+
+</script>
+<script>
+/* =========================================================
+ * 示例数据：典型高校实验室的物料与借阅场景
+ * 首页 → 系统设置 → 载入示例数据 可一键生成
+ * ========================================================= */
+(function () {
+  function fmt(d) {
+    function p(n) { return n < 10 ? '0' + n : '' + n; }
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) +
+      ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  /** n 天前的某个时刻 */
+  function ago(n, h, m) {
+    var d = new Date(); d.setDate(d.getDate() - n);
+    d.setHours(h === undefined ? 10 : h, m === undefined ? 0 : m, 0, 0);
+    return fmt(d);
+  }
+  /** n 天后（只取日期，到期时间默认 18:00） */
+  function later(n) {
+    var d = new Date(); d.setDate(d.getDate() + n);
+    function p(x) { return x < 10 ? '0' + x : '' + x; }
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' 18:00';
+  }
+  function laterDate(n) {
+    var d = new Date(); d.setDate(d.getDate() + n);
+    function p(x) { return x < 10 ? '0' + x : '' + x; }
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  }
+
+  var ITEMS = [
+    // id, 编号, 名称, 分类, 规格, 单位, 库存, 安全线, 位置, 供应商, 单价, 批号, 有效期
+    ['it01', 'M0001', '离心管 50mL', '耗材', '50mL 圆底 25支/包', '包', 12, 5, 'B 区耗材柜', '康宁', 38, 'CN20260611', ''],
+    ['it02', 'M0002', '移液枪头 200μL', '耗材', '200μL 96支/盒', '盒', 26, 8, 'B 区耗材柜', 'Axygen', 62, 'AX-8821', ''],
+    ['it03', 'M0003', 'EP 管 1.5mL', '耗材', '1.5mL 500支/包', '包', 4, 6, 'B 区耗材柜', 'Axygen', 45, 'AX-7712', ''],
+    ['it04', 'M0004', '丁腈手套', '防护用品', 'M 码 100只/盒', '盒', 18, 6, 'B 区耗材柜', '安思尔', 52, 'AN-2026', ''],
+    ['it05', 'M0005', '一次性防护口罩', '防护用品', 'KN95 20只/包', '包', 3, 10, 'B 区耗材柜', '3M', 35, '3M-9501', ''],
+    ['it06', 'M0006', '无水乙醇', '试剂', 'AR 500mL', '瓶', 9, 4, 'A 区试剂柜', '国药集团', 32, '20260318', laterDate(420)],
+    ['it07', 'M0007', '氢氧化钠', '试剂', 'AR 500g', '瓶', 2, 2, 'A 区试剂柜', '国药集团', 28, '20260402', laterDate(500)],
+    ['it08', 'M0008', '浓硫酸', '试剂', '98% 500mL', '瓶', 1, 1, '危化品柜', '国药集团', 46, '20260115', laterDate(300)],
+    ['it09', 'M0009', 'PCR 试剂盒', '试剂', '2×Taq Master Mix', '盒', 3, 2, 'D 区冷藏柜', 'Thermo', 860, 'TH-9920', laterDate(24)],
+    ['it10', 'M0010', '琼脂糖', '试剂', 'Biowest 100g', '瓶', 1, 1, 'A 区试剂柜', 'Biowest', 420, 'BW-1188', laterDate(60)],
+    ['it11', 'M0011', '培养皿 90mm', '耗材', '90mm 20套/包', '包', 15, 6, 'B 区耗材柜', '康宁', 26, 'CN20260501', ''],
+    ['it12', 'M0012', '定量滤纸', '耗材', '中速 φ12.5cm', '盒', 22, 8, 'B 区耗材柜', '双圈', 18, 'SQ-3301', ''],
+    ['it13', 'M0013', 'pH 试纸', '耗材', '1-14 广泛试纸', '本', 6, 3, 'A 区试剂柜', '三爱思', 12, 'SS-014', laterDate(220)],
+    ['it14', 'M0014', '移液枪 100-1000μL', '仪器', '可调量程', '把', 3, 2, 'C 区仪器间', 'Eppendorf', 1280, 'EP-2231', ''],
+    ['it15', 'M0015', '磁力搅拌器', '仪器', '数显加热型', '台', 1, 1, 'C 区仪器间', 'IKA', 1680, 'IKA-556', ''],
+    ['it16', 'M0016', '电子天平', '仪器', '0.1mg 万分之一', '台', 1, 1, 'C 区仪器间', '梅特勒', 8600, 'MT-0091', ''],
+    ['it17', 'M0017', '数字万用表', '电子元件', '四位半', '台', 4, 2, 'C 区仪器间', '福禄克', 560, 'FL-17B', ''],
+    ['it18', 'M0018', '记号笔', '耗材', '双头 酒精可擦', '支', 8, 4, 'B 区耗材柜', '晨光', 6, '', '']
+  ];
+
+  var LOANS = [
+    // id, 单号, 物料id, 数量, 已还, 借用人, 联系方式, 用途, 借出, 应还, 归还时间
+    ['ln01', 'B0001', 'it14', 1, 0, '张明远', '138****2041', '细胞房日常移液', ago(21, 9, 20), later(-6), ''],
+    ['ln02', 'B0002', 'it15', 1, 0, '李思琪', '159****7788', '样品前处理加热搅拌', ago(4, 14, 30), later(3), ''],
+    ['ln03', 'B0003', 'it01', 50, 30, '王浩宇', '实验室座机 612', '毕业设计批量离心', ago(12, 15, 10), later(2), ''],
+    ['ln04', 'B0004', 'it17', 1, 1, '赵一诺', '186****3302', '电路调试', ago(9, 10, 5), later(-2), ago(6, 16, 40)],
+    ['ln05', 'B0005', 'it11', 20, 20, '陈可', '137****8899', '平板涂布实验', ago(30, 9, 0), later(-16), ago(24, 17, 20)]
+  ];
+
+  var LOGS = [
+    ['入库', 'it02', '移液枪头 200μL', 20, 6, 26, '林老师', '学期初集中采购', ago(10, 9, 15)],
+    ['入库', 'it04', '丁腈手套', 12, 6, 18, '林老师', '学期初集中采购', ago(10, 9, 20)],
+    ['出库', 'it05', '一次性防护口罩', -6, 9, 3, '林老师', '课题组领用', ago(8, 11, 5)],
+    ['借出', 'it14', '移液枪 100-1000μL', -1, 4, 3, '林老师', '张明远 借用 1把，应还 ' + later(-6).slice(0, 10), ago(21, 9, 20)],
+    ['归还', 'it11', '培养皿 90mm', 20, -5, 15, '林老师', '陈可 归还 20包', ago(24, 17, 20)],
+    ['出库', 'it03', 'EP 管 1.5mL', -4, 8, 4, '周助教', '本周实验消耗', ago(5, 16, 30)],
+    ['入库', 'it06', '无水乙醇', 5, 4, 9, '林老师', '试剂补货', ago(3, 10, 0)],
+    ['借出', 'it15', '磁力搅拌器', -1, 2, 1, '林老师', '李思琪 借用 1台，应还 ' + later(3).slice(0, 10), ago(4, 14, 30)],
+    ['出库', 'it13', 'pH 试纸', -2, 8, 6, '周助教', '水质检测实验', ago(2, 14, 10)],
+    ['借出', 'it01', '离心管 50mL', -50, 62, 12, '林老师', '王浩宇 借用 50包', ago(12, 15, 10)],
+    ['归还', 'it01', '离心管 50mL', 30, -18, 12, '林老师', '王浩宇 归还 30包', ago(6, 11, 0)],
+    ['归还', 'it17', '数字万用表', 1, 3, 4, '林老师', '赵一诺 归还 1台', ago(6, 16, 40)]
+  ];
+
+  window.SEED = {
+    build: function () {
+      var byId = {};
+      var items = ITEMS.map(function (r) {
+        var it = {
+          id: r[0], code: r[1], name: r[2], category: r[3], spec: r[4], unit: r[5],
+          quantity: r[6], safeMin: r[7], location: r[8], supplier: r[9], price: r[10],
+          lot: r[11], expiry: r[12], remark: '', createdAt: ago(70, 9, 0), updatedAt: ago(2, 9, 0)
+        };
+        byId[it.id] = it;
+        return it;
+      });
+
+      var loans = LOANS.map(function (r) {
+        var it = byId[r[2]] || {};
+        var qty = r[3];
+        return {
+          id: r[0], no: r[1], itemId: r[2], itemCode: it.code || '', itemName: it.name || '',
+          unit: it.unit || '', quantity: qty, returnedQty: r[4], borrower: r[5], contact: r[6],
+          purpose: r[7], borrowAt: r[8], dueAt: r[9], returnAt: r[10],
+          operator: '林老师', createdAt: r[8],
+          history: r[10] ? [{ at: r[10], qty: qty, operator: '林老师' }] : []
+        };
+      });
+
+      var logs = LOGS.map(function (r, i) {
+        return {
+          id: 'seedlog' + i, at: r[8], type: r[0], itemId: r[1], itemName: r[2],
+          delta: r[3], before: r[4], after: r[5], operator: r[6], remark: r[7]
+        };
+      }).sort(function (a, b) { return a.at < b.at ? 1 : -1; });
+
+      return { items: items, loans: loans, logs: logs };
+    }
+  };
+})();
+
+</script>
+<script>
+/* =========================================================
+ * 界面层：视图切换 / 渲染 / 弹窗表单 / 事件绑定
+ * ========================================================= */
+(function () {
+  var $ = function (id) { return document.getElementById(id); };
+  var esc = DB.escapeHtml;
+  var S = function () { return DB.state; };
+
+  var UI = {
+    view: 'dashboard',
+    search: '',
+    itemSort: { key: null, dir: 'asc' },
+    itemFilter: { category: '', location: '', stock: '' },
+    loanFilter: { status: '', borrower: '' },
+    logFilter: { type: '', date: '' }
+  };
+
+  /* ================= 通用 UI ================= */
+  function toast(msg, type) {
+    var el = document.createElement('div');
+    el.className = 'toast ' + (type || '');
+    el.textContent = msg;
+    $('toastRoot').appendChild(el);
+    setTimeout(function () {
+      el.style.transition = 'opacity .25s,transform .25s';
+      el.style.opacity = '0'; el.style.transform = 'translateX(20px)';
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 260);
+    }, 2400);
+  }
+
+  var modalOnClose = null;
+  function openModal(title, bodyHtml, buttons, onClose) {
+    $('modalTitle').textContent = title;
+    $('modalBody').innerHTML = bodyHtml;
+    var foot = $('modalFoot');
+    foot.innerHTML = '';
+    (buttons || []).forEach(function (b) {
+      var btn = document.createElement('button');
+      btn.className = 'btn ' + (b.cls || 'btn-ghost');
+      btn.textContent = b.text;
+      btn.onclick = function () { if (b.onClick) b.onClick(); };
+      foot.appendChild(btn);
+    });
+    $('modal').hidden = false;
+    modalOnClose = onClose || null;
+    var first = $('modalBody').querySelector('input,select,textarea');
+    if (first) setTimeout(function () { first.focus(); }, 60);
+  }
+  function closeModal() {
+    $('modal').hidden = true;
+    if (modalOnClose) { modalOnClose(); modalOnClose = null; }
+  }
+  function confirmModal(title, html, okText, onOk) {
+    openModal(title, '<div style="line-height:1.8">' + html + '</div>', [
+      { text: '取消', cls: 'btn-ghost', onClick: closeModal },
+      {
+        text: okText || '确认', cls: 'btn-danger', onClick: function () {
+          var r = onOk();
+          if (r === false) return;
+          closeModal();
+        }
+      }
+    ]);
+  }
+  function val(id) { var el = $(id); return el ? el.value.trim() : ''; }
+
+  /* ================= 表单片段 ================= */
+  function sel(id, label, options, cur, allowEmpty) {
+    var h = '<label class="field"><span>' + label + '</span><select id="' + id + '">';
+    if (allowEmpty) h += '<option value="">（未填写）</option>';
+    (options || []).forEach(function (o) {
+      var v = typeof o === 'object' ? o.v : o;
+      var t = typeof o === 'object' ? o.t : o;
+      h += '<option value="' + esc(v) + '"' + (String(v) === String(cur) ? ' selected' : '') + '>' + esc(t) + '</option>';
+    });
+    return h + '</select></label>';
+  }
+  function inp(id, label, value, type, extra) {
+    return '<label class="field"><span>' + label + '</span><input id="' + id + '" type="' + (type || 'text') +
+      '" value="' + esc(value === undefined ? '' : value) + '" ' + (extra || '') + '></label>';
+  }
+
+  /* ================= 视图切换 ================= */
+  var VIEW_META = {
+    dashboard: ['库存看板', '实验室物料实时状态总览'],
+    items: ['物料管理', '物料档案、库存数量与存放位置'],
+    loans: ['借阅管理', '借出、归还、续借与逾期跟踪'],
+    logs: ['操作流水', '所有库存变动与借还记录，可追溯'],
+    settings: ['系统设置', '实验室信息、字典维护与数据备份']
+  };
+  function switchView(v) {
+    UI.view = v;
+    document.querySelectorAll('.nav-item').forEach(function (b) {
+      b.classList.toggle('active', b.getAttribute('data-view') === v);
+    });
+    document.querySelectorAll('.view').forEach(function (s) {
+      s.classList.toggle('active', s.id === 'view-' + v);
+    });
+    var meta = VIEW_META[v] || VIEW_META.dashboard;
+    $('pageTitle').textContent = meta[0];
+    $('pageDesc').textContent = meta[1];
+    $('globalSearch').placeholder = v === 'loans' ? '搜索借用人 / 物料 / 单号…'
+      : v === 'logs' ? '搜索物料 / 操作员 / 备注…'
+        : '搜索物料名称 / 编号 / 规格 / 供应商…';
+    render();
+  }
+
+  /* ================= 看板 ================= */
+  function renderDashboard() {
+    var st = DB.stats();
+    $('statKinds').textContent = st.kinds;
+    $('statQty').textContent = Math.round(st.qty);
+    $('statValue').textContent = DB.money(st.value);
+    $('statLow').textContent = st.low;
+    $('statLoan').textContent = st.active;
+    $('statOverdue').textContent = st.overdue;
+
+    // 首页三大入口徽标
+    var borrowable = S().items.filter(function (it) { return it.quantity > 0; }).length;
+    $('qbBorrow').textContent = borrowable + ' 项可借';
+    $('qbReturn').textContent = st.active > 0 ? '待还 ' + st.active + ' 笔' + (st.overdue ? ' · 逾期 ' + st.overdue : '') : '暂无待还';
+    $('qbReturn').className = 'quick-badge ' + (st.overdue ? 'danger' : 'warn');
+    $('qbStock').textContent = st.low > 0 ? st.low + ' 项预警' : '库存正常';
+    $('qbStock').className = 'quick-badge ' + (st.low > 0 ? 'danger' : '');
+
+    // 分类分布
+    var map = {};
+    S().items.forEach(function (it) { map[it.category || '其他'] = (map[it.category || '其他'] || 0) + 1; });
+    var arr = Object.keys(map).map(function (k) { return { k: k, v: map[k] }; })
+      .sort(function (a, b) { return b.v - a.v; });
+    var max = Math.max.apply(null, arr.map(function (a) { return a.v; }).concat([1]));
+    $('chartCategory').innerHTML = arr.length ? '<div class="bar-list">' + arr.map(function (a) {
+      return '<div class="bar-row"><div class="bar-name">' + esc(a.k) + '</div>' +
+        '<div class="bar-track"><div class="bar-fill" style="width:' + (a.v / max * 100).toFixed(1) + '%"></div></div>' +
+        '<div class="bar-val">' + a.v + ' 种</div></div>';
+    }).join('') + '</div>' : emptyBox('暂无物料', '去「物料管理」添加第一件物料');
+
+    // 近 7 日趋势
+    var days = [], idx = {};
+    for (var i = 6; i >= 0; i--) {
+      var d = DB.addDays(DB.nowStr(), -i);
+      idx[d] = { in: 0, out: 0, loan: 0 };
+      days.push(d);
+    }
+    S().logs.forEach(function (l) {
+      var key = (l.at || '').slice(0, 10);
+      if (!idx[key]) return;
+      if (l.type === '入库') idx[key].in++;
+      else if (l.type === '出库') idx[key].out++;
+      else if (l.type === '借出' || l.type === '归还') idx[key].loan++;
+    });
+    var totals = days.map(function (d) { return idx[d].in + idx[d].out + idx[d].loan; });
+    var mx = Math.max.apply(null, totals.concat([1]));
+    var cols = days.map(function (d) {
+      var o = idx[d];
+      var hIn = (o.in / mx * 118), hOut = (o.out / mx * 118), hLoan = (o.loan / mx * 118);
+      return '<div class="trend-col"><div class="trend-stack">' +
+        (o.loan ? '<i class="t-loan" style="height:' + hLoan.toFixed(1) + 'px" title="借还 ' + o.loan + ' 次"></i>' : '') +
+        (o.out ? '<i class="t-out" style="height:' + hOut.toFixed(1) + 'px" title="出库 ' + o.out + ' 次"></i>' : '') +
+        (o.in ? '<i class="t-in" style="height:' + hIn.toFixed(1) + 'px" title="入库 ' + o.in + ' 次"></i>' : '') +
+        '</div><div class="trend-label">' + d.slice(5) + '</div></div>';
+    }).join('');
+    $('chartTrend').innerHTML = '<div class="trend">' + cols + '</div>' +
+      '<div class="legend"><span><i style="background:#3b82f6"></i>入库</span>' +
+      '<span><i style="background:#f59e0b"></i>出库</span>' +
+      '<span><i style="background:#8b5cf6"></i>借还</span></div>';
+
+    // 低库存清单
+    var low = S().items.filter(function (it) { var s = DB.itemStatus(it); return s === 'low' || s === 'out'; })
+      .sort(function (a, b) { return (a.quantity - a.safeMin) - (b.quantity - b.safeMin); }).slice(0, 6);
+    $('listLow').innerHTML = low.length ? low.map(function (it) {
+      var s = DB.itemStatus(it);
+      return '<tr><td><div class="cell-name">' + esc(it.name) + '</div><div class="cell-sub">' + esc(it.code) + ' · ' + esc(it.spec || '—') + '</div></td>' +
+        '<td>' + esc(it.location || '—') + '</td>' +
+        '<td class="right">' + it.quantity + ' ' + esc(it.unit) + '</td>' +
+        '<td class="right">' + it.safeMin + '</td>' +
+        '<td>' + (s === 'out' ? '<span class="tag tag-red">已耗尽</span>' : '<span class="tag tag-orange">需补货</span>') + '</td></tr>';
+    }).join('') : '<tr><td colspan="5">' + emptyBox('库存充足', '暂无低于安全线的物料') + '</td></tr>';
+
+    // 借阅动态
+    var act = S().loans.filter(function (l) { return DB.loanStatus(l) !== 'returned'; })
+      .sort(function (a, b) { return a.dueAt < b.dueAt ? -1 : 1; }).slice(0, 6);
+    $('listDue').innerHTML = act.length ? act.map(function (l) {
+      var s = DB.loanStatus(l), left = DB.daysLeft(l.dueAt);
+      var tag = s === 'overdue' ? '<span class="tag tag-red">逾期 ' + Math.abs(left) + ' 天</span>'
+        : s === 'partial' ? '<span class="tag tag-orange">部分归还</span>'
+          : left <= 3 ? '<span class="tag tag-orange">' + (left === 0 ? '今日到期' : left + ' 天后到期') + '</span>'
+            : '<span class="tag tag-blue">借用中</span>';
+      return '<tr><td><div class="cell-name">' + esc(l.itemName) + '</div><div class="cell-sub">' + esc(l.no) + ' · ' + l.returnedQty + '/' + l.quantity + ' ' + esc(l.unit) + '</div></td>' +
+        '<td>' + esc(l.borrower) + '</td><td>' + esc(l.dueAt.slice(0, 10)) + '</td><td>' + tag + '</td></tr>';
+    }).join('') : '<tr><td colspan="4">' + emptyBox('暂无在借物料', '所有借用均已归还') + '</td></tr>';
+  }
+  function emptyBox(title, sub) {
+    return '<div class="empty"><b>' + esc(title) + '</b>' + esc(sub || '') + '</div>';
+  }
+
+  /* ================= 物料管理 ================= */
+  function filteredItems() {
+    var kw = UI.search.toLowerCase();
+    var list = S().items.filter(function (it) {
+      if (UI.itemFilter.category && it.category !== UI.itemFilter.category) return false;
+      if (UI.itemFilter.location && it.location !== UI.itemFilter.location) return false;
+      var st = UI.itemFilter.stock;
+      if (st) {
+        var is = DB.itemStatus(it);
+        if (st === 'low' && !(is === 'low' || is === 'out')) return false;
+        if (st === 'out' && is !== 'out') return false;
+        if (st === 'expire' && is !== 'expire') return false;
+        if (st === 'normal' && is !== 'normal') return false;
+      }
+      if (kw) {
+        var hay = [it.name, it.code, it.spec, it.supplier, it.category, it.location, it.lot].join(' ').toLowerCase();
+        if (hay.indexOf(kw) < 0) return false;
+      }
+      return true;
+    });
+    var key = UI.itemSort.key;
+    if (key) {
+      var dir = UI.itemSort.dir === 'asc' ? 1 : -1;
+      list.sort(function (a, b) {
+        var va = a[key], vb = b[key];
+        if (va === undefined || va === null) va = '';
+        if (vb === undefined || vb === null) vb = '';
+        if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
+        return String(va).localeCompare(String(vb), 'zh-CN') * dir;
+      });
+    }
+    return list;
+  }
+  function statusTag(it) {
+    var s = DB.itemStatus(it);
+    if (s === 'out') return '<span class="tag tag-red">已耗尽</span>';
+    if (s === 'low') return '<span class="tag tag-orange">低库存</span>';
+    if (s === 'expire') {
+      var d = DB.daysLeft(it.expiry);
+      return '<span class="tag ' + (d < 0 ? 'tag-red' : 'tag-orange') + '">' + (d < 0 ? '已过期' : d + ' 天后到期') + '</span>';
+    }
+    return '<span class="tag tag-green">充足</span>';
+  }
+  function renderItems() {
+    var list = filteredItems();
+    $('itemCount').textContent = '共 ' + list.length + ' 条' + (list.length !== S().items.length ? '（总 ' + S().items.length + ' 条）' : '');
+    $('itemRows').innerHTML = list.length ? list.map(function (it) {
+      var ratio = it.safeMin > 0 ? Math.min(1, it.quantity / (it.safeMin * 2)) : 1;
+      var color = DB.itemStatus(it) === 'normal' ? '#16a34a' : (it.quantity <= 0 ? '#dc2626' : '#d97706');
+      return '<tr>' +
+        '<td><span class="cell-sub">' + esc(it.code) + '</span></td>' +
+        '<td><div class="cell-name">' + esc(it.name) + '</div><div class="cell-sub">' + esc(it.supplier || '未登记供应商') + '</div></td>' +
+        '<td><span class="tag tag-gray">' + esc(it.category) + '</span></td>' +
+        '<td>' + esc(it.spec || '—') + '</td>' +
+        '<td>' + esc(it.location || '—') + '</td>' +
+        '<td class="right"><b>' + it.quantity + '</b> ' + esc(it.unit) +
+        '<div class="bar-mini" style="margin-left:auto"><i style="width:' + (ratio * 100).toFixed(0) + '%;background:' + color + '"></i></div></td>' +
+        '<td class="right">' + it.safeMin + '</td>' +
+        '<td class="right">' + (it.expiry ? esc(it.expiry) : '—') + '</td>' +
+        '<td>' + statusTag(it) + '</td>' +
+        '<td class="td-actions">' +
+        (DB.isAdmin()
+          ? '<button class="mini-btn green" data-act="stockIn" data-id="' + it.id + '">入库</button>' +
+          '<button class="mini-btn gray" data-act="stockOut" data-id="' + it.id + '">出库</button>' +
+          '<button class="mini-btn" data-act="lend" data-id="' + it.id + '">借出</button>' +
+          '<button class="mini-btn gray" data-act="editItem" data-id="' + it.id + '">编辑</button>' +
+          '<button class="mini-btn red" data-act="delItem" data-id="' + it.id + '">删除</button>'
+          : (it.quantity > 0
+            ? '<button class="mini-btn" data-act="lend" data-id="' + it.id + '">借出</button>'
+            : '<span class="cell-sub">库存为 0</span>')) +
+        '</td></tr>';
+    }).join('') : '<tr><td colspan="10">' + emptyBox('没有匹配的物料',
+      DB.isAdmin() ? '换个关键词，或点击右上角「新增物料」' : '换个关键词试试') + '</td></tr>';
+  }
+
+  /* ================= 借阅管理 ================= */
+  var LOAN_TAG = { borrowing: ['tag-blue', '借用中'], partial: ['tag-orange', '部分归还'], overdue: ['tag-red', '已逾期'], returned: ['tag-green', '已归还'] };
+  function renderLoans() {
+    var kw = UI.search.toLowerCase();
+    var me = DB.currentUser();
+    var mineOnly = me && me.role !== 'admin';
+    var list = S().loans.filter(function (l) {
+      if (mineOnly && !(l.userId === me.id || l.borrower === me.name)) return false;
+      if (UI.loanFilter.status && DB.loanStatus(l) !== UI.loanFilter.status) return false;
+      if (UI.loanFilter.borrower && l.borrower !== UI.loanFilter.borrower) return false;
+      if (kw) {
+        var hay = [l.borrower, l.itemName, l.no, l.purpose, l.contact].join(' ').toLowerCase();
+        if (hay.indexOf(kw) < 0) return false;
+      }
+      return true;
+    }).sort(function (a, b) { return a.borrowAt < b.borrowAt ? 1 : -1; });
+
+    $('loanCount').textContent = '共 ' + list.length + ' 条';
+    $('loanRows').innerHTML = list.length ? list.map(function (l) {
+      var s = DB.loanStatus(l), tag = LOAN_TAG[s], left = DB.daysLeft(l.dueAt);
+      var dueTxt = esc(l.dueAt.slice(0, 10));
+      if (s !== 'returned') {
+        dueTxt += left < 0 ? ' <span class="danger">（超 ' + Math.abs(left) + ' 天）</span>'
+          : ' <span class="cell-sub">（剩 ' + left + ' 天）</span>';
+      }
+      var ops;
+      if (s === 'returned') {
+        ops = DB.isAdmin() ? '<button class="mini-btn red" data-act="delLoan" data-id="' + l.id + '">删除</button>' : '—';
+      } else {
+        ops = '<button class="mini-btn green" data-act="returnLoan" data-id="' + l.id + '">归还</button>' +
+          '<button class="mini-btn" data-act="extendLoan" data-id="' + l.id + '">续借</button>' +
+          (DB.isAdmin() ? '<button class="mini-btn red" data-act="delLoan" data-id="' + l.id + '">删除</button>' : '');
+      }
+      return '<tr>' +
+        '<td><span class="cell-sub">' + esc(l.no) + '</span></td>' +
+        '<td><div class="cell-name">' + esc(l.itemName) + '</div><div class="cell-sub">' + esc(l.itemCode || '') + '</div></td>' +
+        '<td class="right">' + (l.returnedQty > 0 ? l.returnedQty + '/' : '') + l.quantity + ' ' + esc(l.unit) + '</td>' +
+        '<td><div>' + esc(l.borrower) + '</div><div class="cell-sub">' + esc(l.contact || '—') + '</div></td>' +
+        '<td>' + esc(l.borrowAt.slice(0, 16)) + '</td>' +
+        '<td>' + dueTxt + '</td>' +
+        '<td>' + (l.returnAt ? esc(l.returnAt.slice(0, 16)) : '—') + '</td>' +
+        '<td>' + esc(l.purpose || '—') + '</td>' +
+        '<td><span class="tag ' + tag[0] + '">' + tag[1] + '</span></td>' +
+        '<td class="td-actions">' + ops + '</td></tr>';
+    }).join('') : '<tr><td colspan="10">' + emptyBox('暂无借用记录', '点击「登记借用」记录一次借出') + '</td></tr>';
+  }
+
+  /* ================= 操作流水 ================= */
+  var LOG_TAG = { 入库: 'tag-blue', 出库: 'tag-orange', 借出: 'tag-purple', 归还: 'tag-green', 新增: 'tag-gray', 编辑: 'tag-gray', 删除: 'tag-red' };
+  function renderLogs() {
+    var kw = UI.search.toLowerCase();
+    var list = S().logs.filter(function (l) {
+      if (UI.logFilter.type && l.type !== UI.logFilter.type) return false;
+      if (UI.logFilter.date && (l.at || '').slice(0, 10) !== UI.logFilter.date) return false;
+      if (kw) {
+        var hay = [l.itemName, l.operator, l.remark, l.type].join(' ').toLowerCase();
+        if (hay.indexOf(kw) < 0) return false;
+      }
+      return true;
+    });
+    $('logCount').textContent = '共 ' + list.length + ' 条';
+    $('logRows').innerHTML = list.length ? list.slice(0, 400).map(function (l) {
+      var d = DB.num(l.delta);
+      var dTxt = d === 0 ? '<span class="cell-sub">—</span>'
+        : '<b class="' + (d > 0 ? '' : 'danger') + '">' + (d > 0 ? '+' : '') + d + '</b>';
+      return '<tr><td>' + esc(l.at) + '</td>' +
+        '<td><span class="tag ' + (LOG_TAG[l.type] || 'tag-gray') + '">' + esc(l.type) + '</span></td>' +
+        '<td>' + esc(l.itemName) + '</td>' +
+        '<td class="right">' + dTxt + '</td>' +
+        '<td class="right">' + (l.after === undefined || l.after === null ? '—' : l.after) + '</td>' +
+        '<td>' + esc(l.operator) + '</td>' +
+        '<td>' + esc(l.remark || '—') + '</td></tr>';
+    }).join('') : '<tr><td colspan="7">' + emptyBox('暂无流水', '所有的入库、出库与借还操作都会记录在此') + '</td></tr>';
+  }
+
+  /* ================= 设置 ================= */
+  function renderSettings() {
+    var st = DB.settings;
+    $('setLabName').value = st.labName || '';
+    $('setAdmin').value = st.operator || '';
+    $('setDays').value = st.borrowDays || 14;
+    $('setExpireDays').value = st.expireWarnDays || 30;
+    $('setCategories').value = (st.categories || []).join('\n');
+    $('setLocations').value = (st.locations || []).join('\n');
+    $('setAllowReg').checked = st.allowStudentRegister !== false;
+    $('setAdminCode').value = st.adminCode || '';
+    renderUserMgmt();
+    updateSyncUI();
+  }
+  function refreshChrome() {
+    var st = DB.settings;
+    $('brandName').textContent = st.labName || '实验室物料库';
+    var u = DB.currentUser();
+    if (u) {
+      $('whoName').textContent = u.name;
+      $('whoRole').textContent = u.role === 'admin' ? '管理员' : '学生';
+      $('whoAvatar').textContent = u.name.slice(0, 1);
+    } else {
+      $('whoName').textContent = '未登录';
+      $('whoRole').textContent = '请先登录';
+      $('whoAvatar').textContent = '未';
+    }
+    document.title = (st.labName || '实验室物料库') + ' · 库存与借阅管理';
+  }
+  function updateSyncUI() {
+    var on = DB.syncEnabled();
+    var pill = $('syncPill');
+    pill.hidden = !on;
+    if (on) pill.textContent = '已同步';
+    $('syncStatus').textContent = on ? '当前：已启用云端同步，数据多设备共享' : '当前：未启用同步（数据仅存本机）';
+    $('syncUrl').value = localStorage.getItem('lab_sync_url') || '';
+    $('syncKey').value = localStorage.getItem('lab_sync_key') || '';
+  }
+  function fillDicts() {
+    var st = DB.settings;
+    [['fCategory', st.categories], ['fLocation', st.locations]].forEach(function (p) {
+      var el = $(p[0]), cur = el.value;
+      el.innerHTML = '<option value="">' + (p[0] === 'fCategory' ? '全部分类' : '全部位置') + '</option>' +
+        p[1].map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join('');
+      el.value = cur;
+    });
+    var bs = {};
+    S().loans.forEach(function (l) { if (l.borrower) bs[l.borrower] = 1; });
+    var bl = $('fBorrower'), cur = bl.value;
+    bl.innerHTML = '<option value="">全部借用人</option>' +
+      Object.keys(bs).map(function (o) { return '<option value="' + esc(o) + '">' + esc(o) + '</option>'; }).join('');
+    bl.value = cur;
+    var dl = $('borrowerList');
+    if (dl) dl.innerHTML = Object.keys(bs).map(function (o) { return '<option value="' + esc(o) + '">'; }).join('');
+  }
+
+  function render() {
+    if (UI.view === 'dashboard') renderDashboard();
+    else if (UI.view === 'items') renderItems();
+    else if (UI.view === 'loans') renderLoans();
+    else if (UI.view === 'logs') renderLogs();
+    else if (UI.view === 'settings') renderSettings();
+    var act = S().loans.filter(function (l) { return DB.loanStatus(l) !== 'returned'; }).length;
+    var badge = $('navBadge');
+    badge.textContent = act;
+    badge.hidden = act === 0;
+  }
+
+  /* ================= 物料表单 ================= */
+  function itemForm(item) {
+    var isNew = !item;
+    var st = DB.settings;
+    item = item || { code: DB.nextCode(), category: st.categories[0], unit: '个', location: st.locations[0], quantity: 0, safeMin: 0 };
+    var body =
+      '<div class="modal-note">' + (isNew ? '新建物料档案，初始库存会自动生成一条「新增」流水。' : '修改库存数量会生成一条「编辑」流水，便于事后追溯。') + '</div>' +
+      '<div class="form-grid">' +
+      inp('fCode', '物料编号', item.code) +
+      inp('fName', '物料名称 *', item.name) +
+      sel('fCat', '分类', st.categories, item.category) +
+      inp('fSpec', '规格型号', item.spec) +
+      inp('fUnit', '计量单位', item.unit) +
+      inp('fQty', '当前库存数量 *', item.quantity, 'number', 'step="0.01" min="0"') +
+      inp('fSafe', '安全库存下限', item.safeMin, 'number', 'step="0.01" min="0"') +
+      sel('fLoc', '存放位置', st.locations, item.location) +
+      inp('fSupplier', '供应商', item.supplier) +
+      inp('fPrice', '单价（元）', item.price, 'number', 'step="0.01" min="0"') +
+      inp('fLot', '批号 / 货号', item.lot) +
+      inp('fExpiry', '有效期至', item.expiry || '', 'date') +
+      '<label class="field field-full"><span>备注</span><textarea id="fRemark" rows="2">' + esc(item.remark || '') + '</textarea></label>' +
+      '</div>';
+    openModal(isNew ? '新增物料' : '编辑物料 · ' + item.name, body, [
+      { text: '取消', cls: 'btn-ghost', onClick: closeModal },
+      {
+        text: isNew ? '确认新增' : '保存修改', cls: 'btn-primary', onClick: function () {
+          var data = {
+            code: val('fCode'), name: val('fName'), category: val('fCat'), spec: val('fSpec'),
+            unit: val('fUnit') || '个', quantity: val('fQty'), safeMin: val('fSafe'),
+            location: val('fLoc'), supplier: val('fSupplier'), price: val('fPrice'),
+            lot: val('fLot'), expiry: val('fExpiry'), remark: val('fRemark')
+          };
+          if (!data.name) return toast('请填写物料名称', 'err');
+          if (DB.num(data.quantity) < 0) return toast('库存数量不能为负数', 'err');
+          if (!isNew) { DB.updateItem(item.id, data, DB.settings.operator); toast('物料已更新', 'ok'); }
+          else { DB.addItem(data, DB.settings.operator); toast('物料已添加', 'ok'); }
+          closeModal(); fillDicts(); render();
+        }
+      }
+    ]);
+  }
+
+  /* ================= 出入库表单 ================= */
+  function stockForm(id, type) {
+    var it = DB.getItem(id); if (!it) return;
+    var isIn = type === 'in';
+    var body =
+      '<div class="modal-note">物料：<b>' + esc(it.name) + '</b>（' + esc(it.code) + '）　当前库存：<b>' + it.quantity + ' ' + esc(it.unit) + '</b>　安全线：' + it.safeMin + '</div>' +
+      '<div class="form-grid">' +
+      inp('sQty', (isIn ? '入库' : '出库') + '数量 *', '', 'number', 'step="0.01" min="0.01"' + (isIn ? '' : ' max="' + it.quantity + '"')) +
+      inp('sOperator', '操作员', DB.settings.operator) +
+      '<label class="field field-full"><span>' + (isIn ? '来源 / 备注（采购单号、捐赠等）' : '用途 / 备注（实验消耗、报废等）') + '</span>' +
+      '<textarea id="sRemark" rows="2"></textarea></label>' +
+      '</div>';
+    openModal(isIn ? '物料入库' : '物料出库', body, [
+      { text: '取消', cls: 'btn-ghost', onClick: closeModal },
+      {
+        text: isIn ? '确认入库' : '确认出库', cls: 'btn-primary', onClick: function () {
+          var q = DB.num(val('sQty'));
+          if (q <= 0) return toast('请填写大于 0 的数量', 'err');
+          var r = DB.stockChange(id, isIn ? q : -q, val('sOperator') || DB.settings.operator, val('sRemark'));
+          if (r !== true) return toast(r, 'err');
+          toast((isIn ? '入库' : '出库') + '成功，' + it.name + ' 当前 ' + DB.getItem(id).quantity + it.unit, 'ok');
+          closeModal(); render();
+        }
+      }
+    ]);
+  }
+
+  /* ================= 借用表单 ================= */
+  function loanForm(presetItemId) {
+    var st = DB.settings;
+    var me = DB.currentUser();
+    var borrowerDef = (me && me.role !== 'admin') ? (me.name || '') : '';
+    var contactDef = (me && me.role !== 'admin') ? (me.phone || '') : '';
+    var opts = S().items.filter(function (it) { return it.quantity > 0; })
+      .map(function (it) { return { v: it.id, t: it.name + '（' + it.code + '）· 余 ' + it.quantity + it.unit }; });
+    if (!opts.length) return toast('没有可借出的物料（库存均为 0）', 'warn');
+    var body =
+      '<div class="modal-note">借出后库存会立即扣减，归还时自动回补；到期未还会在看板与列表中标记逾期。</div>' +
+      '<div class="form-grid">' +
+      sel('lItem', '借用物料 *', opts, presetItemId || opts[0].v) +
+      inp('lQty', '借用数量 *', 1, 'number', 'step="0.01" min="0.01"') +
+      inp('lBorrower', '借用人 *', borrowerDef, 'text', 'list="borrowerList"') +
+      inp('lContact', '联系方式', contactDef, 'text', 'placeholder="手机号 / 工位"') +
+      inp('lBorrowAt', '借出时间', DB.toInput(DB.nowStr()), 'datetime-local') +
+      inp('lDueAt', '应还日期', DB.addDays(DB.nowStr(), DB.num(st.borrowDays, 14)), 'date') +
+      '<label class="field field-full"><span>用途说明</span><textarea id="lPurpose" rows="2" placeholder="如：毕业设计样品前处理"></textarea></label>' +
+      '</div><datalist id="borrowerList"></datalist>';
+    openModal('登记借用', body, [
+      { text: '取消', cls: 'btn-ghost', onClick: closeModal },
+      {
+        text: '确认借出', cls: 'btn-primary', onClick: function () {
+          var data = {
+            itemId: val('lItem'), quantity: val('lQty'), borrower: val('lBorrower'),
+            contact: val('lContact'), borrowAt: val('lBorrowAt').replace('T', ' '),
+            dueAt: val('lDueAt'), purpose: val('lPurpose')
+          };
+          if (!data.borrower) return toast('请填写借用人姓名', 'err');
+          var r = DB.createLoan(data, DB.settings.operator);
+          if (typeof r === 'string') return toast(r, 'err');
+          toast('借用已登记：' + r.no, 'ok');
+          closeModal(); fillDicts(); render();
+        }
+      }
+    ]);
+    var selEl = $('lItem');
+    selEl.onchange = function () {
+      var it = DB.getItem(selEl.value);
+      if (it) $('lQty').max = it.quantity;
+    };
+  }
+
+  function returnForm(id) {
+    var loan = null;
+    S().loans.forEach(function (l) { if (l.id === id) loan = l; });
+    if (!loan) return;
+    var remain = loan.quantity - loan.returnedQty;
+    var left = DB.daysLeft(loan.dueAt);
+    var body =
+      '<div class="modal-note"><b>' + esc(loan.borrower) + '</b> 借用 <b>' + esc(loan.itemName) + '</b> ' +
+      loan.quantity + loan.unit + '，已还 ' + loan.returnedQty + '，待还 <b>' + remain + ' ' + esc(loan.unit) + '</b>' +
+      (left < 0 ? '　<span class="danger">已逾期 ' + Math.abs(left) + ' 天</span>' : '') + '</div>' +
+      '<div class="form-grid">' +
+      inp('rQty', '本次归还数量 *', remain, 'number', 'step="0.01" min="0.01" max="' + remain + '"') +
+      inp('rOperator', '验收人', DB.settings.operator) +
+      '<label class="field field-full"><span>归还备注（损耗、损坏赔偿等）</span><textarea id="rRemark" rows="2"></textarea></label>' +
+      '</div>';
+    openModal('归还登记 · ' + loan.no, body, [
+      { text: '取消', cls: 'btn-ghost', onClick: closeModal },
+      {
+        text: '确认归还', cls: 'btn-primary', onClick: function () {
+          var q = DB.num(val('rQty'));
+          if (q <= 0) return toast('请填写归还数量', 'err');
+          var r = DB.returnLoan(id, q, val('rOperator') || DB.settings.operator, val('rRemark'));
+          if (typeof r === 'string') return toast(r, 'err');
+          toast(r.returnAt ? '已全部归还，库存已回补' : '归还成功，仍有 ' + (r.quantity - r.returnedQty) + r.unit + ' 未还', 'ok');
+          closeModal(); render();
+        }
+      }
+    ]);
+  }
+
+  function extendForm(id) {
+    var loan = null;
+    S().loans.forEach(function (l) { if (l.id === id) loan = l; });
+    if (!loan) return;
+    var body = '<div class="modal-note"><b>' + esc(loan.borrower) + '</b> · ' + esc(loan.itemName) +
+      '　当前应还：<b>' + esc(loan.dueAt.slice(0, 10)) + '</b></div>' +
+      '<div class="form-grid">' + inp('eDays', '续借天数 *', 7, 'number', 'min="1" max="365"') +
+      inp('eOperator', '操作人', DB.settings.operator) + '</div>';
+    openModal('续借 · ' + loan.no, body, [
+      { text: '取消', cls: 'btn-ghost', onClick: closeModal },
+      {
+        text: '确认续借', cls: 'btn-primary', onClick: function () {
+          var d = DB.num(val('eDays'));
+          if (d <= 0) return toast('请填写续借天数', 'err');
+          var r = DB.extendLoan(id, d, val('eOperator') || DB.settings.operator);
+          if (typeof r === 'string') return toast(r, 'err');
+          toast('已续借至 ' + r.dueAt.slice(0, 10), 'ok');
+          closeModal(); render();
+        }
+      }
+    ]);
+  }
+
+  /* ================= 首页「还物料」快捷入口 ================= */
+  function quickReturn() {
+    var list = S().loans.filter(function (l) { return DB.loanStatus(l) !== 'returned'; })
+      .sort(function (a, b) {
+        var oa = DB.loanStatus(a) === 'overdue' ? 0 : 1, ob = DB.loanStatus(b) === 'overdue' ? 0 : 1;
+        if (oa !== ob) return oa - ob;
+        return a.dueAt < b.dueAt ? -1 : 1;
+      });
+    if (!list.length) return toast('当前没有待归还的物料', 'ok');
+    var html = '<div class="modal-note">按到期时间排序，逾期排在最前。点「归还」直接登记，点「续借」延长借期。</div>' +
+      '<div class="pending-list">' + list.map(function (l) {
+        var s = DB.loanStatus(l), left = DB.daysLeft(l.dueAt);
+        var remain = l.quantity - l.returnedQty;
+        return '<div class="pending-item' + (s === 'overdue' ? ' overdue' : '') + '">' +
+          '<div class="pending-main"><b>' + esc(l.itemName) + '</b>' +
+          '<div class="cell-sub">' + esc(l.borrower) + ' · 待还 ' + remain + ' ' + esc(l.unit) +
+          ' · 应还 ' + esc(l.dueAt.slice(0, 10)) +
+          (left < 0 ? ' <span class="danger">（逾期 ' + Math.abs(left) + ' 天）</span>' : '') +
+          '</div></div>' +
+          '<button class="mini-btn green" data-act="qr-return" data-id="' + l.id + '">归还</button>' +
+          '<button class="mini-btn" data-act="qr-extend" data-id="' + l.id + '">续借</button>' +
+          '</div>';
+      }).join('') + '</div>';
+    openModal('还物料 · 待还 ' + list.length + ' 笔', html, [
+      { text: '关闭', cls: 'btn-ghost', onClick: closeModal }
+    ]);
+  }
+
+  /* ================= 导出 ================= */
+  function exportItems() {
+    var list = filteredItems();
+    var rows = list.map(function (it) {
+      var st = { low: '低库存', out: '已耗尽', expire: '近效期', normal: '充足' }[DB.itemStatus(it)];
+      return [it.code, it.name, it.category, it.spec, it.unit, it.quantity, it.safeMin,
+        it.location, it.supplier, it.price, it.lot, it.expiry || '', st, it.updatedAt];
+    });
+    DB.download('物料清单_' + DB.dateStr() + '.csv', DB.toCSV(
+      ['编号', '名称', '分类', '规格', '单位', '库存', '安全库存', '位置', '供应商', '单价', '批号', '有效期', '状态', '更新时间'], rows),
+      'text/csv');
+    toast('已导出 ' + rows.length + ' 条物料', 'ok');
+  }
+  function exportLoans() {
+    var rows = S().loans.map(function (l) {
+      var s = { borrowing: '借用中', partial: '部分归还', overdue: '已逾期', returned: '已归还' }[DB.loanStatus(l)];
+      return [l.no, l.itemCode, l.itemName, l.quantity, l.returnedQty, l.quantity - l.returnedQty, l.unit,
+        l.borrower, l.contact, l.purpose, l.borrowAt, l.dueAt, l.returnAt || '', s, l.operator];
+    });
+    DB.download('借阅记录_' + DB.dateStr() + '.csv', DB.toCSV(
+      ['单号', '物料编号', '物料', '借用数量', '已还', '未还', '单位', '借用人', '联系方式', '用途', '借出时间', '应还时间', '实际归还', '状态', '经办人'], rows),
+      'text/csv');
+    toast('已导出 ' + rows.length + ' 条借阅记录', 'ok');
+  }
+  function exportLogs() {
+    var rows = S().logs.map(function (l) {
+      return [l.at, l.type, l.itemName, l.delta, l.after, l.operator, l.remark];
+    });
+    DB.download('操作流水_' + DB.dateStr() + '.csv', DB.toCSV(
+      ['时间', '类型', '物料', '变动', '变动后', '操作员', '备注'], rows), 'text/csv');
+    toast('已导出 ' + rows.length + ' 条流水', 'ok');
+  }
+
+  /* ================= 事件绑定 ================= */
+  function bind() {
+    $('nav').addEventListener('click', function (e) {
+      var b = e.target.closest('.nav-item');
+      if (b) switchView(b.getAttribute('data-view'));
+    });
+
+    var timer = null;
+    $('globalSearch').addEventListener('input', function (e) {
+      clearTimeout(timer);
+      var v = e.target.value;
+      timer = setTimeout(function () { UI.search = v.trim(); render(); }, 150);
+    });
+
+    $('btnQuickAdd').addEventListener('click', function () { switchView('items'); itemForm(null); });
+    $('btnAddItem').addEventListener('click', function () { itemForm(null); });
+    $('btnAddLoan').addEventListener('click', function () { loanForm(); });
+
+    $('fCategory').addEventListener('change', function (e) { UI.itemFilter.category = e.target.value; renderItems(); });
+    $('fLocation').addEventListener('change', function (e) { UI.itemFilter.location = e.target.value; renderItems(); });
+    $('fStock').addEventListener('change', function (e) { UI.itemFilter.stock = e.target.value; renderItems(); });
+    $('btnResetFilter').addEventListener('click', function () {
+      UI.itemFilter = { category: '', location: '', stock: '' };
+      $('fCategory').value = ''; $('fLocation').value = ''; $('fStock').value = '';
+      renderItems();
+    });
+    $('btnExportItems').addEventListener('click', exportItems);
+
+    $('fLoanStatus').addEventListener('change', function (e) { UI.loanFilter.status = e.target.value; renderLoans(); });
+    $('fBorrower').addEventListener('change', function (e) { UI.loanFilter.borrower = e.target.value; renderLoans(); });
+    $('btnResetLoanFilter').addEventListener('click', function () {
+      UI.loanFilter = { status: '', borrower: '' };
+      $('fLoanStatus').value = ''; $('fBorrower').value = ''; renderLoans();
+    });
+    $('btnExportLoans').addEventListener('click', exportLoans);
+
+    $('fLogType').addEventListener('change', function (e) { UI.logFilter.type = e.target.value; renderLogs(); });
+    $('fLogDate').addEventListener('change', function (e) { UI.logFilter.date = e.target.value; renderLogs(); });
+    $('btnResetLogFilter').addEventListener('click', function () {
+      UI.logFilter = { type: '', date: '' };
+      $('fLogType').value = ''; $('fLogDate').value = ''; renderLogs();
+    });
+    $('btnExportLogs').addEventListener('click', exportLogs);
+
+    // 表头排序
+    document.querySelectorAll('#itemTable .sortable').forEach(function (th) {
+      th.addEventListener('click', function () {
+        var key = th.getAttribute('data-sort');
+        if (UI.itemSort.key === key) UI.itemSort.dir = UI.itemSort.dir === 'asc' ? 'desc' : 'asc';
+        else UI.itemSort = { key: key, dir: 'asc' };
+        document.querySelectorAll('#itemTable .sortable').forEach(function (o) { o.classList.remove('asc', 'desc'); });
+        th.classList.add(UI.itemSort.dir);
+        renderItems();
+      });
+    });
+
+    // 表格行内操作
+    $('itemRows').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-act]'); if (!b) return;
+      var id = b.getAttribute('data-id'), act = b.getAttribute('data-act');
+      if (act === 'stockIn') stockForm(id, 'in');
+      else if (act === 'stockOut') stockForm(id, 'out');
+      else if (act === 'lend') { switchView('loans'); setTimeout(function () { loanForm(id); }, 30); }
+      else if (act === 'editItem') itemForm(DB.getItem(id));
+      else if (act === 'delItem') {
+        var it = DB.getItem(id);
+        confirmModal('删除物料', '确认删除 <b>' + esc(it.name) + '</b>（' + esc(it.code) + '）？<br>该物料的档案与库存将被移除，操作会记录到流水。', '确认删除', function () {
+          var r = DB.deleteItem(id, DB.settings.operator);
+          if (r !== true) { toast(r, 'err'); return false; }
+          toast('物料已删除', 'ok'); fillDicts(); render();
+        });
+      }
+    });
+
+    $('loanRows').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-act]'); if (!b) return;
+      var id = b.getAttribute('data-id'), act = b.getAttribute('data-act');
+      if (act === 'returnLoan') returnForm(id);
+      else if (act === 'extendLoan') extendForm(id);
+      else if (act === 'delLoan') {
+        var loan = null; S().loans.forEach(function (l) { if (l.id === id) loan = l; });
+        var remain = loan ? loan.quantity - loan.returnedQty : 0;
+        confirmModal('删除借用记录',
+          '确认删除借用单 <b>' + esc(loan.no) + '</b>？' +
+          (remain > 0 ? '<br><span class="danger">未还的 ' + remain + loan.unit + ' 将自动回补到库存。</span>' : ''),
+          '确认删除', function () {
+            DB.deleteLoan(id, DB.settings.operator);
+            toast('借用记录已删除', 'ok'); fillDicts(); render();
+          });
+      }
+    });
+
+    // 首页三大入口
+    document.querySelectorAll('.quick-card').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var q = b.getAttribute('data-quick');
+        if (q === 'borrow') loanForm();
+        else if (q === 'return') quickReturn();
+        else switchView('items');
+      });
+    });
+    // 「还物料」弹窗内的归还 / 续借（只绑定一次，避免重复累积）
+    $('modalBody').addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-act^="qr-"]');
+      if (!btn) return;
+      var id = btn.getAttribute('data-id'), act = btn.getAttribute('data-act');
+      closeModal();
+      setTimeout(function () { act === 'qr-return' ? returnForm(id) : extendForm(id); }, 40);
+    });
+
+    // 看板跳转
+    document.querySelectorAll('[data-goto]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var v = b.getAttribute('data-goto');
+        if (b.getAttribute('data-filter') === 'low') {
+          UI.itemFilter.stock = 'low'; $('fStock').value = 'low';
+        }
+        switchView(v);
+      });
+    });
+
+    // 设置
+    $('btnSaveSettings').addEventListener('click', function () {
+      var st = DB.settings;
+      st.labName = val('setLabName') || '实验室物料库';
+      st.operator = val('setAdmin') || '管理员';
+      st.borrowDays = Math.max(1, DB.num(val('setDays'), 14));
+      st.expireWarnDays = Math.max(1, DB.num(val('setExpireDays'), 30));
+      DB.save(); refreshChrome(); render();
+      toast('设置已保存', 'ok');
+    });
+    $('btnSaveDict').addEventListener('click', function () {
+      var st = DB.settings;
+      var c = val('setCategories').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+      var l = val('setLocations').split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
+      if (!c.length || !l.length) return toast('分类和位置都不能为空', 'err');
+      st.categories = c; st.locations = l;
+      DB.save(); fillDicts();
+      toast('字典已更新', 'ok');
+    });
+    $('btnExportAll').addEventListener('click', function () { DB.exportBackup(); toast('备份已导出', 'ok'); });
+    $('btnImportAll').addEventListener('click', function () { $('fileImport').click(); });
+    $('fileImport').addEventListener('change', function (e) {
+      var f = e.target.files[0]; if (!f) return;
+      var fr = new FileReader();
+      fr.onload = function () {
+        try {
+          var data = JSON.parse(fr.result);
+          if (!data || !Array.isArray(data.items)) throw new Error('格式错误');
+          confirmModal('导入备份', '将用备份覆盖当前数据：<b>' + data.items.length + '</b> 项物料、<b>' +
+            (data.loans || []).length + '</b> 条借阅记录。此操作不可撤销。', '确认导入', function () {
+              DB.replace(data); refreshChrome(); fillDicts(); render();
+              toast('数据导入成功', 'ok');
+            });
+        } catch (err) { toast('导入失败：文件不是有效的备份 JSON', 'err'); }
+      };
+      fr.readAsText(f);
+      e.target.value = '';
+    });
+    $('btnSeed').addEventListener('click', function () {
+      confirmModal('载入示例数据', '将清空当前数据并载入一套实验室示例物料与借阅记录，便于体验完整功能。', '确认载入', function () {
+        var d = window.SEED.build();
+        DB.replace({ settings: DB.settings, items: d.items, loans: d.loans, logs: d.logs });
+        fillDicts(); render(); toast('示例数据已载入', 'ok');
+      });
+    });
+    $('btnClear').addEventListener('click', function () {
+      confirmModal('清空所有数据', '将删除全部物料、借阅记录与操作流水，<b>无法恢复</b>。建议先导出 JSON 备份。', '确认清空', function () {
+        DB.clearAll(); refreshChrome(); fillDicts(); render(); toast('数据已清空', 'ok');
+      });
+    });
+
+    // 弹窗
+    $('modalClose').addEventListener('click', closeModal);
+    $('modal').addEventListener('mousedown', function (e) { if (e.target === $('modal')) closeModal(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !$('modal').hidden) closeModal();
+    });
+
+    // 登录 / 注册 切换
+    document.querySelectorAll('.auth-tab').forEach(function (t) {
+      t.addEventListener('click', function () {
+        authMode = t.getAttribute('data-auth');
+        document.querySelectorAll('.auth-tab').forEach(function (x) { x.classList.toggle('active', x === t); });
+        renderAuthForm();
+      });
+    });
+    // 退出登录
+    $('btnLogout').addEventListener('click', function () {
+      if (!DB.currentUser()) return;
+      confirmModal('退出登录', '确认退出当前账号？退出后需重新登录才能操作。', '退出登录', function () {
+        DB.logout();
+        showAuth();
+        toast('已退出登录', 'ok');
+      });
+    });
+    // 用户管理操作（事件委托）
+    $('userRows').addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-uact]'); if (!b) return;
+      var id = b.getAttribute('data-id'), act = b.getAttribute('data-uact');
+      if (act === 'promote' || act === 'demote') {
+        var r = DB.setRole(id, act === 'promote' ? 'admin' : 'student');
+        if (typeof r === 'string') return toast(r, 'err');
+        toast('角色已更新', 'ok'); renderUserMgmt();
+      } else if (act === 'reset') {
+        resetPassForm(id);
+      } else if (act === 'del') {
+        var u = DB.getUser(id);
+        confirmModal('删除用户', '确认删除用户 <b>' + esc(u.name) + '</b>（' + esc(u.sid) + '）？该操作不可撤销。', '确认删除', function () {
+          var r = DB.deleteUser(id);
+          if (typeof r === 'string') { toast(r, 'err'); return false; }
+          toast('用户已删除', 'ok'); renderUserMgmt();
+        });
+      }
+    });
+    // 注册设置保存
+    $('btnSaveUserCfg').addEventListener('click', function () {
+      DB.settings.allowStudentRegister = $('setAllowReg').checked;
+      DB.settings.adminCode = val('setAdminCode');
+      DB.save();
+      toast('注册设置已保存', 'ok');
+    });
+
+    /* ---------- 数据同步（Supabase） ---------- */
+    $('btnSyncTest').addEventListener('click', async function () {
+      var url = val('syncUrl'), key = val('syncKey');
+      if (!url || !key) return toast('请先填写 URL 和密钥', 'err');
+      DB.saveSyncConfig(url, key);
+      $('syncStatus').textContent = '正在测试连接…';
+      var r = await Sync.test();
+      if (r === true) {
+        $('syncStatus').textContent = '连接成功 ✓ 可点击「保存并启用」';
+        toast('连接成功', 'ok');
+      } else {
+        $('syncStatus').textContent = '连接失败：' + r;
+        toast('连接失败：' + r, 'err');
+      }
+    });
+    $('btnSyncSave').addEventListener('click', async function () {
+      var url = val('syncUrl'), key = val('syncKey');
+      if (!url || !key) return toast('请先填写 URL 和密钥', 'err');
+      DB.saveSyncConfig(url, key);
+      var r = await Sync.test();
+      if (r !== true) return toast('连接失败：' + r, 'err');
+      toast('已启用同步，正在拉取云端数据…', 'ok');
+      await DB.syncPull();
+      refreshChrome(); fillDicts(); render(); updateSyncUI();
+      toast('同步完成，数据已多设备共享', 'ok');
+    });
+    $('btnSyncNow').addEventListener('click', async function () {
+      if (!DB.syncEnabled()) return toast('请先保存并启用同步', 'err');
+      toast('正在同步…', 'ok');
+      await DB.syncPull();
+      render(); updateSyncUI();
+      toast('已拉取最新数据', 'ok');
+    });
+    $('btnSyncOff').addEventListener('click', function () {
+      DB.saveSyncConfig('', '');
+      updateSyncUI();
+      toast('已关闭云端同步，数据仅存本机', 'ok');
+    });
+  }
+
+  /* ================= 登录 / 注册 / 权限 ================= */
+  var authMode = 'login';
+  function showAuth() {
+    authMode = 'login';
+    document.querySelectorAll('.auth-tab').forEach(function (t) {
+      t.classList.toggle('active', t.getAttribute('data-auth') === 'login');
+    });
+    renderAuthForm();
+    $('authMask').hidden = false;
+  }
+  function renderAuthForm() {
+    var st = DB.settings;
+    $('authLabName').textContent = st.labName || '实验室物料库';
+    var html;
+    if (authMode === 'login') {
+      html =
+        '<form class="auth-form" id="authForm" autocomplete="off">' +
+          inp('aKey', '学号 / 工号 / 姓名 *', '', 'text', 'placeholder="登录账号"') +
+          '<label class="field"><span>密码 *</span><input id="aPass" type="password" placeholder="请输入密码"></label>' +
+          '<div id="authErr" class="auth-err"></div>' +
+          '<button type="submit" class="btn btn-primary auth-btn">登录</button>' +
+        '</form>';
+    } else {
+      var firstUser = DB.userCount() === 0;
+      html =
+        '<form class="auth-form" id="authForm" autocomplete="off">' +
+          inp('rName', '姓名 *', '', 'text', 'placeholder="真实姓名"') +
+          inp('rSid', '学号 / 工号 *', '', 'text', 'placeholder="用于登录的唯一账号"') +
+          inp('rPhone', '手机号', '', 'text', 'placeholder="选填"') +
+          '<div class="auth-label">注册身份</div>' +
+          '<div class="role-pick" id="rolePick">' +
+            '<button type="button" class="role-opt' + (firstUser ? ' on' : '') + '" data-role="student"><b>学生</b><span>可查询库存、借用与归还物料</span></button>' +
+            '<button type="button" class="role-opt' + (firstUser ? '' : '') + '" data-role="admin"><b>管理员</b><span>' + (firstUser ? '（首个注册账号自动为管理员）' : '需填写管理员注册码') + '</span></button>' +
+          '</div>' +
+          '<div id="rCodeWrap" style="display:none">' +
+            inp('rCode', '管理员注册码 *', '', 'text', 'placeholder="向现有管理员获取"') +
+          '</div>' +
+          '<label class="field"><span>密码 *（至少 6 位）</span><input id="rPass" type="password" placeholder="设置登录密码"></label>' +
+          '<label class="field"><span>确认密码 *</span><input id="rPass2" type="password" placeholder="再次输入密码"></label>' +
+          '<div id="authErr" class="auth-err"></div>' +
+          '<button type="submit" class="btn btn-primary auth-btn">注册并登录</button>' +
+        '</form>';
+    }
+    $('authBody').innerHTML = html;
+    bindAuthForm();
+  }
+  function bindAuthForm() {
+    var form = $('authForm');
+    if (!form) return;
+    var rp = $('rolePick');
+    if (rp) {
+      rp.addEventListener('click', function (e) {
+        var b = e.target.closest('.role-opt'); if (!b) return;
+        rp.querySelectorAll('.role-opt').forEach(function (x) { x.classList.remove('on'); });
+        b.classList.add('on');
+        var isAdmin = b.getAttribute('data-role') === 'admin';
+        $('rCodeWrap').style.display = isAdmin ? 'block' : 'none';
+        if (!isAdmin) $('rCode').value = '';
+      });
+    }
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var err = $('authErr'); err.textContent = '';
+      if (authMode === 'login') {
+        var r = DB.login($('aKey').value.trim(), $('aPass').value);
+        if (typeof r === 'string') { err.textContent = r; return; }
+        onLoggedIn();
+      } else {
+        var role = rp ? rp.querySelector('.role-opt.on').getAttribute('data-role') : 'student';
+        var data = {
+          name: $('rName').value.trim(), sid: $('rSid').value.trim(), phone: $('rPhone').value.trim(),
+          role: role,
+          code: role === 'admin' ? $('rCode').value.trim() : '',
+          password: $('rPass').value, confirm: $('rPass2').value
+        };
+        var r2 = DB.registerUser(data);
+        if (typeof r2 === 'string') { err.textContent = r2; return; }
+        onLoggedIn();
+      }
+    });
+  }
+  function onLoggedIn() {
+    $('authMask').hidden = true;
+    applyAuth();
+    refreshChrome(); fillDicts();
+    switchView('dashboard');
+    var u = DB.currentUser();
+    toast('欢迎，' + u.name + '（' + (u.role === 'admin' ? '管理员' : '学生') + '）', 'ok');
+  }
+  /** 根据当前登录身份，控制管理员专用入口的显隐 */
+  function applyAuth() {
+    var u = DB.currentUser();
+    var isAdmin = !!u && u.role === 'admin';
+    $('btnQuickAdd').style.display = isAdmin ? '' : 'none';
+    $('btnAddItem').style.display = isAdmin ? '' : 'none';
+    var navSettings = document.querySelector('.nav-item[data-view="settings"]');
+    if (navSettings) navSettings.style.display = isAdmin ? '' : 'none';
+    if (!isAdmin && UI.view === 'settings') switchView('dashboard');
+  }
+  function renderUserMgmt() {
+    var me = DB.currentUser();
+    var rows = S().users.map(function (u) {
+      var isMe = me && u.id === me.id;
+      var ops = '—';
+      if (me && me.role === 'admin') {
+        ops = '';
+        if (u.role !== 'admin') ops += '<button class="mini-btn" data-uact="promote" data-id="' + u.id + '">升级管理员</button>';
+        else ops += '<button class="mini-btn gray" data-uact="demote" data-id="' + u.id + '">降为学生</button>';
+        ops += '<button class="mini-btn" data-uact="reset" data-id="' + u.id + '">重置密码</button>';
+        if (!isMe) ops += '<button class="mini-btn red" data-uact="del" data-id="' + u.id + '">删除</button>';
+      }
+      return '<tr>' +
+        '<td>' + esc(u.name) + (isMe ? ' <span class="tag tag-blue">我</span>' : '') + '</td>' +
+        '<td>' + esc(u.sid) + '</td>' +
+        '<td>' + (u.role === 'admin' ? '<span class="tag tag-purple">管理员</span>' : '<span class="tag tag-gray">学生</span>') + '</td>' +
+        '<td>' + esc(u.phone || '—') + '</td>' +
+        '<td>' + esc(u.lastAt || '从未') + '</td>' +
+        '<td class="td-actions">' + ops + '</td></tr>';
+    }).join('');
+    $('userRows').innerHTML = rows || '<tr><td colspan="6">' + emptyBox('暂无注册用户', '在登录页注册第一个账号，或在此管理') + '</td></tr>';
+  }
+  function resetPassForm(id) {
+    var u = DB.getUser(id); if (!u) return;
+    var body = '<div class="modal-note">为 <b>' + esc(u.name) + '</b> 设置一个新密码（至少 6 位）。</div>' +
+      '<div class="form-grid">' +
+      '<label class="field"><span>新密码 *</span><input id="rpNew" type="password" placeholder="至少 6 位"></label>' +
+      '<label class="field"><span>确认密码 *</span><input id="rpNew2" type="password" placeholder="再次输入"></label>' +
+      '</div>';
+    openModal('重置密码', body, [
+      { text: '取消', cls: 'btn-ghost', onClick: closeModal },
+      { text: '确认重置', cls: 'btn-primary', onClick: function () {
+        var p = $('rpNew').value, p2 = $('rpNew2').value;
+        if (p.length < 6) return toast('密码至少 6 位', 'err');
+        if (p !== p2) return toast('两次密码不一致', 'err');
+        var r = DB.resetPass(id, p);
+        if (typeof r === 'string') return toast(r, 'err');
+        toast('密码已重置', 'ok'); closeModal(); renderUserMgmt();
+      } }
+    ]);
+  }
+
+  /* ================= 启动 ================= */
+  async function init() {
+    var isFirst = !localStorage.getItem(DB.KEY);
+    DB.load();
+    if (isFirst || (!DB.state.items.length && !DB.state.logs.length)) {
+      var d = window.SEED.build();
+      DB.state.settings = DB.settings;
+      DB.state.items = d.items;
+      DB.state.loans = d.loans;
+      DB.state.logs = d.logs;
+      DB.save();
+    }
+    // 若已配置云端同步，先拉取最新共享数据
+    if (DB.syncEnabled()) {
+      try { await DB.syncPull(); } catch (e) { console.warn('启动同步失败', e); }
+    }
+    refreshChrome();
+    fillDicts();
+    bind();
+    if (typeof updateSyncUI === 'function') updateSyncUI();
+    if (DB.currentUser()) {
+      applyAuth();
+      switchView('dashboard');
+    } else {
+      showAuth();
+    }
+    if (isFirst) setTimeout(function () { toast('已为你载入一套示例数据，可在「系统设置」中清空', 'ok'); }, 500);
+  }
+
+  init();
+})();
+
+</script>
+</body>
+</html>
