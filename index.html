@@ -711,6 +711,7 @@ table{border-collapse:collapse;width:100%;}
               <button class="btn btn-primary" id="btnSyncSave">保存并启用</button>
               <button class="btn btn-ghost" id="btnSyncNow">立即同步（拉取）</button>
               <button class="btn btn-danger-ghost" id="btnSyncOff">关闭同步</button>
+              <button class="btn btn-danger-ghost" id="btnClearCloud" hidden>清空云端数据</button>
             </div>
             <div class="field field-full"><span id="syncStatus" class="sync-status">当前：未启用同步（数据仅存本机）</span></div>
           </div>
@@ -886,6 +887,19 @@ var Sync = (function () {
     return out;
   }
 
+  /** 清空云端全部数据（仅管理员可调用）：删除 5 张表所有行 */
+  async function clearAll() {
+    if (!cfg.enabled) return false;
+    var ok = true;
+    for (var c in TABLES) {
+      try {
+        var r = await fetch(endpoint(TABLES[c]), { method: 'DELETE', headers: headers() });
+        if (!r.ok && r.status !== 204) { ok = false; console.warn('[sync] clear ' + c + ' 失败', r.status); }
+      } catch (e) { ok = false; console.warn('[sync] clear ' + c + ' 网络错误', e); }
+    }
+    return ok;
+  }
+
   return {
     configure: configure,
     isEnabled: isEnabled,
@@ -893,7 +907,8 @@ var Sync = (function () {
     pushRows: pushRows,
     pushSettings: pushSettings,
     removeRow: removeRow,
-    pull: pull
+    pull: pull,
+    clearAll: clearAll
   };
 })();
 if (typeof window !== 'undefined') window.Sync = Sync;
@@ -1015,6 +1030,11 @@ var DB = (function () {
     return ok;
   }
   function syncEnabled() { return typeof Sync !== 'undefined' && Sync.isEnabled(); }
+  /** 清空云端数据库全部数据（删除 5 张表所有行）。仅管理员调用。 */
+  function clearCloud() {
+    if (typeof Sync === 'undefined' || !Sync.isEnabled()) return false;
+    return Sync.clearAll();
+  }
   /** 从云端拉取最新数据并合并；若云端为空则把本地上传 */
   async function syncPull() {
     if (typeof Sync === 'undefined' || !Sync.isEnabled()) return false;
@@ -1407,7 +1427,7 @@ var DB = (function () {
     get state() { return state; },
     get settings() { return state.settings; },
     load: load, save: save, replace: replace, clearAll: clearAll,
-    saveSyncConfig: saveSyncConfig, syncEnabled: syncEnabled, syncPull: syncPull, pushAll: pushAll,
+    saveSyncConfig: saveSyncConfig, syncEnabled: syncEnabled, syncPull: syncPull, pushAll: pushAll, clearCloud: clearCloud,
     uid: uid, nowStr: nowStr, dateStr: dateStr, toInput: toInput, toDate: toDate,
     daysLeft: daysLeft, addDays: addDays, num: num, money: money, escapeHtml: escapeHtml,
     getItem: getItem, addItem: addItem, updateItem: updateItem, deleteItem: deleteItem,
@@ -1920,6 +1940,8 @@ var DB = (function () {
     $('syncStatus').textContent = on ? '当前：已启用云端同步，数据多设备共享' : '当前：未启用同步（数据仅存本机）';
     $('syncUrl').value = localStorage.getItem('lab_sync_url') || '';
     $('syncKey').value = localStorage.getItem('lab_sync_key') || '';
+    var cc = $('btnClearCloud');
+    if (cc) cc.hidden = !(on && DB.isAdmin());
   }
   function fillDicts() {
     var st = DB.settings;
@@ -2439,6 +2461,15 @@ var DB = (function () {
       updateSyncUI();
       toast('已关闭云端同步，数据仅存本机', 'ok');
     });
+    $('btnClearCloud').addEventListener('click', async function () {
+      if (!DB.syncEnabled()) return toast('请先启用云端同步', 'err');
+      if (!DB.isAdmin()) return toast('仅管理员可执行该操作', 'err');
+      confirmModal('清空云端数据', '将<b>永久删除云端数据库</b>的全部物料、借阅、流水、用户与设置（5 张表），<b>无法恢复</b>。本机数据不受影响，建议先到「数据管理」导出 JSON 备份。', '确认清空云端', async function () {
+        var ok = await DB.clearCloud();
+        if (ok) toast('云端数据已清空', 'ok');
+        else toast('清空失败，请稍后重试', 'err');
+      });
+    });
   }
 
   /* ================= 登录 / 注册 / 权限 ================= */
@@ -2539,6 +2570,7 @@ var DB = (function () {
     var navSettings = document.querySelector('.nav-item[data-view="settings"]');
     if (navSettings) navSettings.style.display = isAdmin ? '' : 'none';
     if (!isAdmin && UI.view === 'settings') switchView('dashboard');
+    if (typeof updateSyncUI === 'function') updateSyncUI();
   }
   function renderUserMgmt() {
     var me = DB.currentUser();
