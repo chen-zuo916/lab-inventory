@@ -2641,6 +2641,29 @@ var DB = (function () {
       showAuth();
     }
     if (isFirst) setTimeout(function () { toast('已为你载入一套示例数据，可在「系统设置」中清空', 'ok'); }, 500);
+    startAutoSync(12000);
+  }
+
+  // 后台轻量轮询：云端有变化时才刷新界面，避免打断正在进行的操作
+  function syncSig() {
+    try { return JSON.stringify([DB.state.items, DB.state.loans, DB.state.logs, DB.state.users]); } catch (e) { return ''; }
+  }
+  async function startAutoSync(intervalMs) {
+    if (!DB.syncEnabled()) return;
+    if (typeof setInterval === 'undefined') return;
+    setInterval(async function () {
+      if (!DB.syncEnabled() || !DB.currentUser()) return;          // 未登录无需刷新
+      var mask = document.querySelector('.modal-mask:not([hidden])');
+      if (mask) return;                                            // 有弹窗打开，跳过
+      var ae = document.activeElement;
+      if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return; // 正在输入，跳过
+      var before = syncSig();
+      try { await DB.syncPull(); } catch (e) { return; }
+      if (syncSig() !== before) {
+        render();
+        if (typeof updateSyncUI === 'function') updateSyncUI();
+      }
+    }, intervalMs || 12000);
   }
 
   init();
