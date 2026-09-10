@@ -2661,11 +2661,17 @@ var DB = (function () {
         if (!isAdmin) $('rCode').value = '';
       });
     }
-    form.addEventListener('submit', function (e) {
+    form.addEventListener('submit', async function (e) {
       e.preventDefault();
       var err = $('authErr'); err.textContent = '';
       if (authMode === 'login') {
-        var r = DB.login($('aKey').value.trim(), $('aPass').value);
+        var key = $('aKey').value.trim(), pw = $('aPass').value;
+        var r = DB.login(key, pw);
+        // 本地未找到账号时，尝试从云端再拉取一次再登录（解决新设备 / 首次同步尚未到达的情况）
+        if (typeof r === 'string' && r === '账号不存在' && DB.syncEnabled()) {
+          try { await DB.syncPull(); } catch (e2) { console.warn('登录前同步失败', e2); }
+          r = DB.login(key, pw);
+        }
         if (typeof r === 'string') { err.textContent = r; return; }
         onLoggedIn();
       } else {
@@ -2795,7 +2801,18 @@ var DB = (function () {
     }, intervalMs || 12000);
   }
 
-  init();
+  // 全局错误兜底：任何未捕获异常都在页面上可见，避免"白屏无提示"
+  window.addEventListener('error', function (ev) {
+    try {
+      var root = document.getElementById('toastRoot') || document.body;
+      var d = document.createElement('div');
+      d.style.cssText = 'position:fixed;left:12px;bottom:12px;max-width:90vw;z-index:999;background:#b91c1c;color:#fff;padding:10px 14px;border-radius:10px;font:13px/1.5 system-ui;box-shadow:0 8px 24px rgba(0,0,0,.3)';
+      d.textContent = '页面脚本错误：' + (ev.message || (ev.error && ev.error.message) || ev.error) + '（请截图反馈）';
+      root.appendChild(d);
+    } catch (e) {}
+  });
+
+  init().catch(function (e) { console.error('init 失败', e); });
 })();
 
 </script>
