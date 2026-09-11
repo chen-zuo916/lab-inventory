@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <!-- 自包含单文件版：CSS 与 JS 已内联，可直接双击打开或部署 -->
-<title>实验室物料库存与借阅管理平台</title>
+<title>智能机器人社团 · 器材与借用管理</title>
 <script>window.__LAB_SYNC={"url":"https://yfyhpinyxhbbuustjdvk.supabase.co","key":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlmeWhwaW55eGhiYnV1c3RqZHZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTE4NDksImV4cCI6MjEwNDUyNzg0OX0.ZNj4BD7XnxJIHETejtZcMT9Nfm9UpZbjs4DkcYmJeGo"}</script>
 <style>
 /* ============ 基础变量 ============ */
@@ -21,9 +21,9 @@
   --faint:#9ca3af;
   --border:#e3e8f1;
   --border-strong:#d4dbe8;
-  --primary:#185adb;
-  --primary-dark:#113b93;
-  --primary-soft:#e7efff;
+  --primary:#ec4899;
+  --primary-dark:#be185d;
+  --primary-soft:#fce7f3;
   --accent:#f59e0b;
   --success:#10b981;
   --success-soft:#d1fae5;
@@ -133,7 +133,7 @@ table{border-collapse:collapse;width:100%;}
 }
 .nav-item.active::before{
   content:"";position:absolute;left:0;top:9px;bottom:9px;width:3px;border-radius:3px;
-  background:linear-gradient(180deg,#30e39f,#185adb);
+  background:linear-gradient(180deg,#30e39f,#ec4899);
 }
 .nav-ic{width:19px;height:19px;display:flex;align-items:center;justify-content:center;}
 .nav-ic.ic{width:19px;height:19px;}
@@ -184,7 +184,7 @@ table{border-collapse:collapse;width:100%;}
   width:280px;padding:9px 13px;border:1px solid var(--border-strong);border-radius:10px;
   background:#fff;outline:none;transition:.15s;
 }
-.search-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(24,90,219,.12);}
+.search-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(236,72,153,.12);}
 
 /* 用户下拉 */
 .topbar-user-dropdown{position:relative;}
@@ -195,7 +195,7 @@ table{border-collapse:collapse;width:100%;}
 .topbar-user-btn:hover{border-color:#bcc7d8;background:#f7f9fc;}
 .topbar-avatar{
   width:32px;height:32px;border-radius:50%;flex:0 0 32px;
-  background:linear-gradient(135deg,#185adb,#7c3aed);color:#fff;
+  background:linear-gradient(135deg,#ec4899,#7c3aed);color:#fff;
   display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;
 }
 .topbar-user-name{font-size:13.5px;font-weight:600;color:var(--text);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -228,7 +228,7 @@ table{border-collapse:collapse;width:100%;}
   display:inline-flex;align-items:center;gap:6px;padding:9px 15px;border-radius:10px;
   font-size:13.5px;font-weight:600;transition:.15s;white-space:nowrap;
 }
-.btn-primary{background:linear-gradient(135deg,var(--primary),#2b6cf0);color:#fff;box-shadow:0 6px 16px rgba(24,90,219,.28);}
+.btn-primary{background:linear-gradient(135deg,var(--primary),#f472b6);color:#fff;box-shadow:0 6px 16px rgba(236,72,153,.28);}
 .btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px);}
 .btn-ghost{background:#fff;border:1px solid var(--border-strong);color:var(--text);}
 .btn-ghost:hover{border-color:#b4bfd0;background:#f8fafd;}
@@ -293,7 +293,7 @@ table{border-collapse:collapse;width:100%;}
   padding:8px 11px;border:1px solid var(--border-strong);border-radius:9px;background:#fff;outline:none;transition:.15s;
 }
 .filters select:focus,.input-date:focus,.field input:focus,.field textarea:focus,.field select:focus{
-  border-color:var(--primary);box-shadow:0 0 0 3px rgba(24,90,219,.12);
+  border-color:var(--primary);box-shadow:0 0 0 3px rgba(236,72,153,.12);
 }
 .toolbar-right{display:flex;gap:8px;}
 .table-wrap{overflow-x:auto;}
@@ -372,7 +372,7 @@ table{border-collapse:collapse;width:100%;}
 .modal-head h3{font-size:16px;font-weight:700;}
 .modal-body{padding:20px;overflow-y:auto;}
 .modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:10px;background:#fafbfd;border-radius:0 0 16px 16px;}
-.modal-note{background:var(--primary-soft);border:1px solid #d8e6ff;color:#1e40af;padding:10px 12px;border-radius:8px;font-size:12.5px;margin-bottom:16px;line-height:1.6;}
+.modal-note{background:var(--primary-soft);border:1px solid #fbcfe8;color:#be185d;padding:10px 12px;border-radius:8px;font-size:12.5px;margin-bottom:16px;line-height:1.6;}
 
 /* ============ 提示 ============ */
 .toast-root{position:fixed;top:20px;right:20px;z-index:200;display:flex;flex-direction:column;gap:10px;}
@@ -500,9 +500,9 @@ table{border-collapse:collapse;width:100%;}
    ============================================================ */
 
 :root {
-  --primary:      #185adb;
-  --primary-dark: #113b93;
-  --primary-light:#dbeafe;
+  --primary:      #ec4899;
+  --primary-dark: #be185d;
+  --primary-light:#fce7f3;
   --accent:       #f59e0b;
   --success:      #10b981;
   --success-light:#d1fae5;
@@ -803,7 +803,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
 .sidebar-avatar {
   width: 32px; height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #185adb 0%, #2d7ff9 100%);
+  background: linear-gradient(135deg, #ec4899 0%, #2d7ff9 100%);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 13px;
@@ -1036,7 +1036,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
   white-space: nowrap;
 }
 .btn-primary {
-  background: linear-gradient(135deg, #185adb 0%, #236df3 100%);
+  background: linear-gradient(135deg, #ec4899 0%, #236df3 100%);
   color: #fff;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
 }
@@ -1129,7 +1129,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
   font-size: 20px;
   margin-bottom: 12px;
 }
-.stat-card-icon.blue  { background: #dbeafe; color: #3b82f6; }
+.stat-card-icon.blue  { background: #fce7f3; color: #3b82f6; }
 .stat-card-icon.green { background: #d1fae5; color: #10b981; }
 .stat-card-icon.orange{ background: #fef3c7; color: #f59e0b; }
 .stat-card-icon.red   { background: #fee2e2; color: #ef4444; }
@@ -1248,7 +1248,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
   font-weight: 500;
   border-radius: 6px;
 }
-.badge-primary   { background: #dbeafe; color: #3b82f6; }
+.badge-primary   { background: #fce7f3; color: #3b82f6; }
 .badge-success   { background: #d1fae5; color: #10b981; }
 .badge-warning   { background: #fef3c7; color: #f59e0b; }
 .badge-danger    { background: #fee2e2; color: #ef4444; }
@@ -1830,7 +1830,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
 .flash-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
 .flash-danger  { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 .flash-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-.flash-info    { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.flash-info    { background: #fce7f3; color: #be185d; border: 1px solid #bfdbfe; }
 
 /* ============================================================
    mb-3 etc for bootstrap compatibility
@@ -1873,7 +1873,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
 .toast-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
 .toast-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 .toast-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-.toast-info    { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.toast-info    { background: #fce7f3; color: #be185d; border: 1px solid #bfdbfe; }
 @keyframes toastIn {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
@@ -2264,7 +2264,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
   --primary: #0f766e;
   --primary-dark: #0b5f59;
   --primary-light: #d9f7f0;
-  --agent: #12b981;
+  --agent: #06b6d4;
   --accent: #f59e0b;
   --text: #132238;
   --text-secondary: #5b6b83;
@@ -2322,7 +2322,7 @@ body::before {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #12b981 0%, #0f766e 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #0f766e 100%);
   box-shadow: 0 12px 24px rgba(18, 185, 129, 0.22);
 }
 
@@ -2356,7 +2356,7 @@ body::before {
 .nav-item.active::before {
   width: 4px;
   height: 22px;
-  background: #12b981;
+  background: #06b6d4;
 }
 
 .app-main {
@@ -2648,7 +2648,7 @@ body::before {
   width: 64px;
   height: 64px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #0f766e 0%, #12b981 100%);
+  background: linear-gradient(135deg, #0f766e 0%, #06b6d4 100%);
   box-shadow: 0 20px 48px rgba(15, 118, 110, 0.28);
 }
 
@@ -3617,10 +3617,10 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
    （接在参考包 style_ref.css 之后，本段优先级最高）
    ============================================================ */
 :root{
-  --primary:#185adb;
-  --primary-dark:#113b93;
-  --primary-light:#dbeafe;
-  --agent:#12b981;
+  --primary:#ec4899;
+  --primary-dark:#be185d;
+  --primary-light:#fce7f3;
+  --agent:#06b6d4;
   --accent:#f59e0b;
   --success:#10b981;
   --success-light:#d1fae5;
@@ -3673,7 +3673,7 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
   cursor:pointer; transition:all .15s ease; background:#fff;
 }
 .role-opt:hover{ border-color:var(--primary); }
-.role-opt.on{ border-color:var(--primary); background:var(--primary-light); box-shadow:0 0 0 3px rgba(24,90,219,.1); }
+.role-opt.on{ border-color:var(--primary); background:var(--primary-light); box-shadow:0 0 0 3px rgba(236,72,153,.1); }
 .role-opt .ro-title{ font-weight:700; color:var(--text); }
 .role-opt .ro-desc{ font-size:12px; color:var(--text-muted); margin-top:3px; }
 
@@ -3708,7 +3708,7 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
 }
 .tag-red{ background:var(--danger-light); color:#b91c1c; }
 .tag-orange{ background:var(--warning-light); color:#92400e; }
-.tag-blue{ background:var(--primary-light); color:#1e40af; }
+.tag-blue{ background:var(--primary-light); color:#be185d; }
 .tag-green{ background:var(--success-light); color:#065f46; }
 .tag-gray{ background:#eef1f6; color:#64748b; }
 .tag-purple{ background:#f2ecff; color:#6d28d9; }
@@ -3719,7 +3719,7 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
 /* 看板走势条 */
 .trend{ display:flex; align-items:flex-end; gap:4px; height:42px; }
 .trend-col{ flex:1; border-radius:6px 6px 0 0; min-height:3px; }
-.t-in{ background:linear-gradient(180deg,#3b82f6,#185adb); }
+.t-in{ background:linear-gradient(180deg,#3b82f6,#ec4899); }
 .t-out{ background:linear-gradient(180deg,#f59e0b,#d97706); }
 .t-loan{ background:linear-gradient(180deg,#10b981,#0f766e); }
 .trend-label{ font-size:12px; color:var(--text-muted); margin-top:6px; }
@@ -3732,7 +3732,7 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
 .bar-row{ display:grid; grid-template-columns:120px 1fr 56px; align-items:center; gap:10px; }
 .bar-name{ font-size:13px; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .bar-track{ height:8px; border-radius:999px; background:var(--surface-3); overflow:hidden; }
-.bar-fill{ height:100%; border-radius:999px; background:linear-gradient(90deg,#185adb,#30e39f); }
+.bar-fill{ height:100%; border-radius:999px; background:linear-gradient(90deg,#ec4899,#30e39f); }
 .bar-val{ font-size:12px; color:var(--text-secondary); text-align:right; }
 .bar-mini .bar-track{ height:6px; }
 
@@ -3750,9 +3750,9 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
    ============================================================ */
 
 :root {
-  --primary:      #185adb;
-  --primary-dark: #113b93;
-  --primary-light:#dbeafe;
+  --primary:      #ec4899;
+  --primary-dark: #be185d;
+  --primary-light:#fce7f3;
   --accent:       #f59e0b;
   --success:      #10b981;
   --success-light:#d1fae5;
@@ -4053,7 +4053,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
 .sidebar-avatar {
   width: 32px; height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #185adb 0%, #2d7ff9 100%);
+  background: linear-gradient(135deg, #ec4899 0%, #2d7ff9 100%);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 13px;
@@ -4286,7 +4286,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
   white-space: nowrap;
 }
 .btn-primary {
-  background: linear-gradient(135deg, #185adb 0%, #236df3 100%);
+  background: linear-gradient(135deg, #ec4899 0%, #236df3 100%);
   color: #fff;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
 }
@@ -4379,7 +4379,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
   font-size: 20px;
   margin-bottom: 12px;
 }
-.stat-card-icon.blue  { background: #dbeafe; color: #3b82f6; }
+.stat-card-icon.blue  { background: #fce7f3; color: #3b82f6; }
 .stat-card-icon.green { background: #d1fae5; color: #10b981; }
 .stat-card-icon.orange{ background: #fef3c7; color: #f59e0b; }
 .stat-card-icon.red   { background: #fee2e2; color: #ef4444; }
@@ -4498,7 +4498,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
   font-weight: 500;
   border-radius: 6px;
 }
-.badge-primary   { background: #dbeafe; color: #3b82f6; }
+.badge-primary   { background: #fce7f3; color: #3b82f6; }
 .badge-success   { background: #d1fae5; color: #10b981; }
 .badge-warning   { background: #fef3c7; color: #f59e0b; }
 .badge-danger    { background: #fee2e2; color: #ef4444; }
@@ -5080,7 +5080,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
 .flash-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
 .flash-danger  { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 .flash-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-.flash-info    { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.flash-info    { background: #fce7f3; color: #be185d; border: 1px solid #bfdbfe; }
 
 /* ============================================================
    mb-3 etc for bootstrap compatibility
@@ -5123,7 +5123,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
 .toast-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
 .toast-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 .toast-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-.toast-info    { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.toast-info    { background: #fce7f3; color: #be185d; border: 1px solid #bfdbfe; }
 @keyframes toastIn {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
@@ -5514,7 +5514,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
   --primary: #0f766e;
   --primary-dark: #0b5f59;
   --primary-light: #d9f7f0;
-  --agent: #12b981;
+  --agent: #06b6d4;
   --accent: #f59e0b;
   --text: #132238;
   --text-secondary: #5b6b83;
@@ -5572,7 +5572,7 @@ body::before {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #12b981 0%, #0f766e 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #0f766e 100%);
   box-shadow: 0 12px 24px rgba(18, 185, 129, 0.22);
 }
 
@@ -5606,7 +5606,7 @@ body::before {
 .nav-item.active::before {
   width: 4px;
   height: 22px;
-  background: #12b981;
+  background: #06b6d4;
 }
 
 .app-main {
@@ -5898,7 +5898,7 @@ body::before {
   width: 64px;
   height: 64px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #0f766e 0%, #12b981 100%);
+  background: linear-gradient(135deg, #0f766e 0%, #06b6d4 100%);
   box-shadow: 0 20px 48px rgba(15, 118, 110, 0.28);
 }
 
@@ -6863,7 +6863,7 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
   }
 }
 :root{
-  --primary:#185adb; --primary-dark:#113b93; --primary-light:#dbeafe; --agent:#12b981;
+  --primary:#ec4899; --primary-dark:#be185d; --primary-light:#fce7f3; --agent:#06b6d4;
   --accent:#f59e0b; --success:#10b981; --success-light:#d1fae5; --warning:#f59e0b; --warning-light:#fef3c7;
   --danger:#ef4444; --danger-light:#fee2e2; --text:#10203a; --text-secondary:#51607a; --text-muted:#9ca3af;
   --sidebar-bg:#0f1b32; --sidebar-border:#1d2b46; --topbar-bg:rgba(255,255,255,.82); --topbar-border:#e5e7eb;
@@ -6880,7 +6880,7 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
 .role-pick{display:flex;gap:10px;flex-wrap:wrap;}
 .role-opt{flex:1;min-width:120px;padding:12px 14px;border:1.5px solid var(--border);border-radius:14px;cursor:pointer;transition:all .15s ease;background:#fff;}
 .role-opt:hover{border-color:var(--primary);}
-.role-opt.on{border-color:var(--primary);background:var(--primary-light);box-shadow:0 0 0 3px rgba(24,90,219,.1);}
+.role-opt.on{border-color:var(--primary);background:var(--primary-light);box-shadow:0 0 0 3px rgba(236,72,153,.1);}
 .role-opt .ro-title{font-weight:700;color:var(--text);}
 .role-opt .ro-desc{font-size:12px;color:var(--text-muted);margin-top:3px;}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
@@ -6898,14 +6898,14 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
 .tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;line-height:1.6;background:var(--surface-3);color:var(--text-secondary);}
 .tag-red{background:var(--danger-light);color:#b91c1c;}
 .tag-orange{background:var(--warning-light);color:#92400e;}
-.tag-blue{background:var(--primary-light);color:#1e40af;}
+.tag-blue{background:var(--primary-light);color:#be185d;}
 .tag-green{background:var(--success-light);color:#065f46;}
 .tag-gray{background:#eef1f6;color:#64748b;}
 .tag-purple{background:#f2ecff;color:#6d28d9;}
 .modal-note{font-size:12px;color:var(--text-muted);margin-top:10px;line-height:1.6;}
 .trend{display:flex;align-items:flex-end;gap:4px;height:42px;}
 .trend-col{flex:1;border-radius:6px 6px 0 0;min-height:3px;}
-.t-in{background:linear-gradient(180deg,#3b82f6,#185adb);}
+.t-in{background:linear-gradient(180deg,#3b82f6,#ec4899);}
 .t-out{background:linear-gradient(180deg,#f59e0b,#d97706);}
 .t-loan{background:linear-gradient(180deg,#10b981,#0f766e);}
 .trend-label{font-size:12px;color:var(--text-muted);margin-top:6px;}
@@ -6916,7 +6916,7 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
 .bar-row{display:grid;grid-template-columns:120px 1fr 56px;align-items:center;gap:10px;}
 .bar-name{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bar-track{height:8px;border-radius:999px;background:var(--surface-3);overflow:hidden;}
-.bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#185adb,#30e39f);}
+.bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#ec4899,#30e39f);}
 .bar-val{font-size:12px;color:var(--text-secondary);text-align:right;}
 .bar-mini .bar-track{height:6px;}
 .pending-main{display:grid;gap:10px;}
@@ -6929,9 +6929,9 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
    ============================================================ */
 
 :root {
-  --primary:      #185adb;
-  --primary-dark: #113b93;
-  --primary-light:#dbeafe;
+  --primary:      #ec4899;
+  --primary-dark: #be185d;
+  --primary-light:#fce7f3;
   --accent:       #f59e0b;
   --success:      #10b981;
   --success-light:#d1fae5;
@@ -7232,7 +7232,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
 .sidebar-avatar {
   width: 32px; height: 32px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #185adb 0%, #2d7ff9 100%);
+  background: linear-gradient(135deg, #ec4899 0%, #2d7ff9 100%);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-weight: 700; font-size: 13px;
@@ -7465,7 +7465,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
   white-space: nowrap;
 }
 .btn-primary {
-  background: linear-gradient(135deg, #185adb 0%, #236df3 100%);
+  background: linear-gradient(135deg, #ec4899 0%, #236df3 100%);
   color: #fff;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
 }
@@ -7558,7 +7558,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
   font-size: 20px;
   margin-bottom: 12px;
 }
-.stat-card-icon.blue  { background: #dbeafe; color: #3b82f6; }
+.stat-card-icon.blue  { background: #fce7f3; color: #3b82f6; }
 .stat-card-icon.green { background: #d1fae5; color: #10b981; }
 .stat-card-icon.orange{ background: #fef3c7; color: #f59e0b; }
 .stat-card-icon.red   { background: #fee2e2; color: #ef4444; }
@@ -7677,7 +7677,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
   font-weight: 500;
   border-radius: 6px;
 }
-.badge-primary   { background: #dbeafe; color: #3b82f6; }
+.badge-primary   { background: #fce7f3; color: #3b82f6; }
 .badge-success   { background: #d1fae5; color: #10b981; }
 .badge-warning   { background: #fef3c7; color: #f59e0b; }
 .badge-danger    { background: #fee2e2; color: #ef4444; }
@@ -8259,7 +8259,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
 .flash-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
 .flash-danger  { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 .flash-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-.flash-info    { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.flash-info    { background: #fce7f3; color: #be185d; border: 1px solid #bfdbfe; }
 
 /* ============================================================
    mb-3 etc for bootstrap compatibility
@@ -8302,7 +8302,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
 .toast-success { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
 .toast-error   { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
 .toast-warning { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
-.toast-info    { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+.toast-info    { background: #fce7f3; color: #be185d; border: 1px solid #bfdbfe; }
 @keyframes toastIn {
   from { transform: translateX(100%); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
@@ -8693,7 +8693,7 @@ html.sidebar-collapsed-state .app-sidebar .sidebar-collapse-btn {
   --primary: #0f766e;
   --primary-dark: #0b5f59;
   --primary-light: #d9f7f0;
-  --agent: #12b981;
+  --agent: #06b6d4;
   --accent: #f59e0b;
   --text: #132238;
   --text-secondary: #5b6b83;
@@ -8751,7 +8751,7 @@ body::before {
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #12b981 0%, #0f766e 100%);
+  background: linear-gradient(135deg, #06b6d4 0%, #0f766e 100%);
   box-shadow: 0 12px 24px rgba(18, 185, 129, 0.22);
 }
 
@@ -8785,7 +8785,7 @@ body::before {
 .nav-item.active::before {
   width: 4px;
   height: 22px;
-  background: #12b981;
+  background: #06b6d4;
 }
 
 .app-main {
@@ -9077,7 +9077,7 @@ body::before {
   width: 64px;
   height: 64px;
   border-radius: 18px;
-  background: linear-gradient(135deg, #0f766e 0%, #12b981 100%);
+  background: linear-gradient(135deg, #0f766e 0%, #06b6d4 100%);
   box-shadow: 0 20px 48px rgba(15, 118, 110, 0.28);
 }
 
@@ -10042,7 +10042,7 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
   }
 }
 :root{
-  --primary:#185adb; --primary-dark:#113b93; --primary-light:#dbeafe; --agent:#12b981;
+  --primary:#ec4899; --primary-dark:#be185d; --primary-light:#fce7f3; --agent:#06b6d4;
   --accent:#f59e0b; --success:#10b981; --success-light:#d1fae5; --warning:#f59e0b; --warning-light:#fef3c7;
   --danger:#ef4444; --danger-light:#fee2e2; --text:#10203a; --text-secondary:#51607a; --text-muted:#9ca3af;
   --sidebar-bg:#0f1b32; --sidebar-border:#1d2b46; --topbar-bg:rgba(255,255,255,.82); --topbar-border:#e5e7eb;
@@ -10059,7 +10059,7 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
 .role-pick{display:flex;gap:10px;flex-wrap:wrap;}
 .role-opt{flex:1;min-width:120px;padding:12px 14px;border:1.5px solid var(--border);border-radius:14px;cursor:pointer;transition:all .15s ease;background:#fff;}
 .role-opt:hover{border-color:var(--primary);}
-.role-opt.on{border-color:var(--primary);background:var(--primary-light);box-shadow:0 0 0 3px rgba(24,90,219,.1);}
+.role-opt.on{border-color:var(--primary);background:var(--primary-light);box-shadow:0 0 0 3px rgba(236,72,153,.1);}
 .role-opt .ro-title{font-weight:700;color:var(--text);}
 .role-opt .ro-desc{font-size:12px;color:var(--text-muted);margin-top:3px;}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
@@ -10077,14 +10077,14 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
 .tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:700;line-height:1.6;background:var(--surface-3);color:var(--text-secondary);}
 .tag-red{background:var(--danger-light);color:#b91c1c;}
 .tag-orange{background:var(--warning-light);color:#92400e;}
-.tag-blue{background:var(--primary-light);color:#1e40af;}
+.tag-blue{background:var(--primary-light);color:#be185d;}
 .tag-green{background:var(--success-light);color:#065f46;}
 .tag-gray{background:#eef1f6;color:#64748b;}
 .tag-purple{background:#f2ecff;color:#6d28d9;}
 .modal-note{font-size:12px;color:var(--text-muted);margin-top:10px;line-height:1.6;}
 .trend{display:flex;align-items:flex-end;gap:4px;height:42px;}
 .trend-col{flex:1;border-radius:6px 6px 0 0;min-height:3px;}
-.t-in{background:linear-gradient(180deg,#3b82f6,#185adb);}
+.t-in{background:linear-gradient(180deg,#3b82f6,#ec4899);}
 .t-out{background:linear-gradient(180deg,#f59e0b,#d97706);}
 .t-loan{background:linear-gradient(180deg,#10b981,#0f766e);}
 .trend-label{font-size:12px;color:var(--text-muted);margin-top:6px;}
@@ -10095,7 +10095,7 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
 .bar-row{display:grid;grid-template-columns:120px 1fr 56px;align-items:center;gap:10px;}
 .bar-name{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .bar-track{height:8px;border-radius:999px;background:var(--surface-3);overflow:hidden;}
-.bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#185adb,#30e39f);}
+.bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#ec4899,#30e39f);}
 .bar-val{font-size:12px;color:var(--text-secondary);text-align:right;}
 .bar-mini .bar-track{height:6px;}
 .pending-main{display:grid;gap:10px;}
@@ -10109,7 +10109,7 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
 .ic-user{--ic:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2'><circle cx='12' cy='8' r='3.6'/><path d='M5 20c0-3.9 3.1-7 7-7s7 3.1 7 7'/></svg>");}
 
 /* ============ 顶部 AI 中枢触发按钮 ============ */
-.ai-trigger{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--border);background:linear-gradient(135deg,#185adb,#0ea5e9);color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;box-shadow:0 2px 10px rgba(24,90,219,.18);}
+.ai-trigger{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px;border-radius:999px;border:1px solid var(--border);background:linear-gradient(135deg,#ec4899,#0ea5e9);color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;box-shadow:0 2px 10px rgba(24,90,219,.18);}
 .ai-trigger:hover{filter:brightness(1.05);}
 .ai-dot{width:8px;height:8px;border-radius:50%;background:#5eead4;box-shadow:0 0 0 3px rgba(94,234,212,.25);}
 
@@ -10124,18 +10124,52 @@ html.sidebar-collapsed-state body.tankes-v9 .sidebar-collapse-btn,
 .assistant-section-title{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--text-muted,#94a3b8);text-transform:uppercase;margin-bottom:10px;}
 .assistant-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
 .assistant-action{padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:var(--surface,#16203a);color:var(--text,#e6edf7);font-size:13px;font-weight:600;cursor:pointer;text-align:left;transition:.15s;}
-.assistant-action:hover{border-color:var(--primary,#185adb);background:rgba(24,90,219,.12);}
+.assistant-action:hover{border-color:var(--primary,#ec4899);background:rgba(236,72,153,.12);}
 .assistant-faq{display:flex;flex-direction:column;gap:12px;}
 .assistant-q{font-size:13.5px;font-weight:600;color:var(--text,#e6edf7);margin-bottom:4px;}
 .assistant-a{font-size:12.5px;line-height:1.7;color:var(--text-secondary,#aab6c8);}
 
 /* 浅色主题下助手抽屉使用亮色底 */
-.assistant-drawer{--bg:#ffffff;--surface:#f5f8fc;--text:#0f172a;--text-secondary:#475569;--text-muted:#94a3b8;--border:#e6ecf3;--primary:#185adb;}
+.assistant-drawer{--bg:#ffffff;--surface:#f5f8fc;--text:#0f172a;--text-secondary:#475569;--text-muted:#94a3b8;--border:#e6ecf3;--primary:#ec4899;}
 body.assistant-open{overflow:hidden;}
 
 /* 个人中心 / 成员管理页头间距 */
 #view-members .page-header,#view-profile .page-header{margin-bottom:18px;}
 #view-members .page-header h1,#view-profile .page-header h1{font-size:22px;font-weight:700;}
+
+/* ============ 机器人社团主题点缀（粉 + 青 + 紫） ============ */
+.app{
+  --robot:#06b6d4;      /* 科技青 */
+  --robot-2:#a855f7;    /* 霓虹紫 */
+  --primary:#ec4899;    /* 主色：粉 */
+  --primary-dark:#be185d;
+  --primary-light:#fce7f3;
+  --primary-soft:#fce7f3;
+}
+/* 品牌 logo：粉紫青渐变 + 机器人圆角质感 */
+.brand-logo{
+  display:flex;align-items:center;justify-content:center;
+  width:38px;height:38px;border-radius:12px;
+  font-size:20px;font-weight:800;color:#fff;
+  background:linear-gradient(135deg,#ec4899,#06b6d4 70%,#a855f7);
+  box-shadow:0 4px 12px rgba(236,72,153,.35);
+  letter-spacing:.5px;
+}
+/* 侧边栏当前项：粉底 + 青色左光条 */
+.nav-item.active{
+  color:var(--primary);
+  background:linear-gradient(90deg,var(--primary-soft),rgba(236,72,153,.04));
+  border-right:3px solid var(--robot);
+}
+.nav-item.active .nav-ic{ color:var(--primary); }
+/* 顶栏 AI 中枢按钮保持粉青渐变 */
+.ai-trigger{
+  background:linear-gradient(135deg,#ec4899,#06b6d4);
+  box-shadow:0 2px 10px rgba(236,72,153,.22);
+}
+/* 统计卡图标里的青色点缀 */
+.stat-ic.cyan{ background:rgba(6,182,212,.12); color:#0891b2; }
+.stat-ic.purple{ background:rgba(168,85,247,.14); color:#7e22ce; }
 
 </style>
 </head>
@@ -10149,7 +10183,7 @@ body.assistant-open{overflow:hidden;}
     <div class="app-sidebar-logo">
       <div class="logo-icon">LB</div>
       <div class="logo-stack">
-        <span class="logo-text" id="brandName">实验室物料库</span>
+        <span class="logo-text" id="brandName">智能机器人社团</span>
         <span class="logo-subtext">库存 · 借阅 · 溯源</span>
       </div>
       <button class="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="收起侧栏">
@@ -10189,7 +10223,7 @@ body.assistant-open{overflow:hidden;}
           <span id="breadcrumb">库存看板</span>
         </div>
         <h1 id="pageTitle">库存看板</h1>
-        <p id="pageDesc">实验室物料实时状态总览</p>
+        <p id="pageDesc">社团器材实时状态总览</p>
       </div>
       <div class="topbar-right">
         <button class="ai-trigger" id="btnAi" onclick="toggleAssistant()" title="智能助手">
@@ -10441,9 +10475,9 @@ body.assistant-open{overflow:hidden;}
       <section class="view" id="view-settings">
         <div class="chart-grid">
           <div class="panel">
-            <div class="panel-head"><h3>实验室信息</h3></div>
+            <div class="panel-head"><h3>社团信息</h3></div>
             <div class="panel-body form-grid">
-              <label class="field"><span>实验室名称</span><input id="setLabName" type="text" placeholder="如：材料分析与测试中心"></label>
+              <label class="field"><span>社团名称</span><input id="setLabName" type="text" placeholder="如：智能机器人社团"></label>
               <label class="field"><span>默认操作员</span><input id="setAdmin" type="text" placeholder="用于流水记录署名"></label>
               <label class="field"><span>默认借期（天）</span><input id="setDays" type="number" min="1" max="365" value="14"></label>
               <label class="field"><span>低库存提前预警（天）</span><input id="setExpireDays" type="number" min="1" max="365" value="30"></label>
@@ -10490,7 +10524,7 @@ body.assistant-open{overflow:hidden;}
             <button class="btn btn-danger-ghost" id="btnClear">清空所有数据</button>
           </div>
           <div class="panel-body tip-box">
-            <b>多人协作提示：</b>当前版本数据保存在各自的浏览器本地。如需全实验室共享，可在服务器上部署一份，或用「导出 JSON → 由管理员导入」的方式定期同步；后续接入后端数据库即可实现实时协作。
+            <b>多人协作提示：</b>当前版本数据保存在各自的浏览器本地。如需全社团共享，可在服务器上部署一份，或用「导出 JSON → 由管理员导入」的方式定期同步；后续接入后端数据库即可实现实时协作。
           </div>
         </div>
       </section>
@@ -10500,7 +10534,7 @@ body.assistant-open{overflow:hidden;}
         <div class="page-header">
           <div class="page-header-text">
             <h1>成员管理</h1>
-            <p>实验室成员名册，管理员可调整角色、重置密码与注销账号</p>
+            <p>社团成员名册，管理员可调整角色、重置密码与注销账号</p>
           </div>
         </div>
 
@@ -10550,10 +10584,10 @@ body.assistant-open{overflow:hidden;}
 <div class="auth-mask" id="authMask" hidden>
   <div class="auth-card">
     <div class="auth-brand">
-      <div class="brand-logo">LB</div>
+      <div class="brand-logo">🤖</div>
       <div class="auth-brand-text">
-        <strong id="authLabName">实验室物料库</strong>
-        <span>库存 · 借阅 · 溯源</span>
+        <strong id="authLabName">智能机器人社团</strong>
+        <span>器材 · 借用 · 管理</span>
       </div>
     </div>
     <div class="auth-tabs">
@@ -10731,7 +10765,7 @@ var DB = (function () {
   var KEY = 'lab_inventory_v1';
 
   var DEFAULT_SETTINGS = {
-    labName: '实验室物料库',
+    labName: '智能机器人社团',
     operator: '管理员',
     borrowDays: 14,
     expireWarnDays: 30,
@@ -11469,7 +11503,7 @@ var DB = (function () {
 
   /* ================= 视图切换 ================= */
   var VIEW_META = {
-    dashboard: ['库存看板', '实验室物料实时状态总览'],
+    dashboard: ['器材看板', '社团器材实时状态总览'],
     items: ['物料管理', '物料档案、库存数量与存放位置'],
     loans: ['借阅管理', '借出、归还、续借与逾期跟踪'],
     logs: ['操作流水', '所有库存变动与借还记录，可追溯'],
@@ -11750,7 +11784,7 @@ var DB = (function () {
   }
   function refreshChrome() {
     var st = DB.settings;
-    $('brandName').textContent = st.labName || '实验室物料库';
+    $('brandName').textContent = st.labName || '智能机器人社团';
     var u = DB.currentUser();
     if (u) {
       $('whoName').textContent = u.name;
@@ -11761,7 +11795,7 @@ var DB = (function () {
       $('whoRole').textContent = '请先登录';
       $('whoAvatar').textContent = '未';
     }
-    document.title = (st.labName || '实验室物料库') + ' · 库存与借阅管理';
+    document.title = (st.labName || '智能机器人社团') + ' · 器材与借用管理';
   }
   function updateSyncUI() {
     var on = DB.syncEnabled();
@@ -12157,7 +12191,7 @@ var DB = (function () {
     // 设置
     $('btnSaveSettings').addEventListener('click', function () {
       var st = DB.settings;
-      st.labName = val('setLabName') || '实验室物料库';
+      st.labName = val('setLabName') || '智能机器人社团';
       st.operator = val('setAdmin') || '管理员';
       st.borrowDays = Math.max(1, DB.num(val('setDays'), 14));
       st.expireWarnDays = Math.max(1, DB.num(val('setExpireDays'), 30));
@@ -12317,7 +12351,7 @@ var DB = (function () {
   }
   function renderAuthForm() {
     var st = DB.settings;
-    $('authLabName').textContent = st.labName || '实验室物料库';
+    $('authLabName').textContent = st.labName || '智能机器人社团';
     var html;
     if (authMode === 'login') {
       html =
