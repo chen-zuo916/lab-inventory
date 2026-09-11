@@ -2669,6 +2669,7 @@ var DB = (function () {
         var r = DB.login(key, pw);
         // 本地未找到账号时，尝试从云端再拉取一次再登录（解决新设备 / 首次同步尚未到达的情况）
         if (typeof r === 'string' && r === '账号不存在' && DB.syncEnabled()) {
+          err.textContent = '正在从云端同步账号，请稍候…';
           try { await DB.syncPull(); } catch (e2) { console.warn('登录前同步失败', e2); }
           r = DB.login(key, pw);
         }
@@ -2753,17 +2754,18 @@ var DB = (function () {
   async function init() {
     var isFirst = !localStorage.getItem(DB.KEY);
     DB.load();
-    if (isFirst || (!DB.state.items.length && !DB.state.logs.length)) {
+    // 若已配置云端同步，先拉取最新共享数据，避免把本机示例数据推上去覆盖云端
+    if (DB.syncEnabled()) {
+      try { await DB.syncPull(); } catch (e) { console.warn('启动同步失败', e); }
+    }
+    // 只有全新且没有任何数据时才载入示例数据
+    if (isFirst || (!DB.state.items.length && !DB.state.logs.length && !DB.state.users.length)) {
       var d = window.SEED.build();
       DB.state.settings = DB.settings;
       DB.state.items = d.items;
       DB.state.loans = d.loans;
       DB.state.logs = d.logs;
       DB.save();
-    }
-    // 若已配置云端同步，先拉取最新共享数据
-    if (DB.syncEnabled()) {
-      try { await DB.syncPull(); } catch (e) { console.warn('启动同步失败', e); }
     }
     refreshChrome();
     fillDicts();
