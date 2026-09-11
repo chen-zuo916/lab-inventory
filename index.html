@@ -10171,6 +10171,37 @@ body.assistant-open{overflow:hidden;}
 .stat-ic.cyan{ background:rgba(6,182,212,.12); color:#0891b2; }
 .stat-ic.purple{ background:rgba(168,85,247,.14); color:#7e22ce; }
 
+/* ============ 界面尺寸紧凑化 ============ */
+:root{ --sidebar-w:260px; }
+.app-topbar{padding:10px 20px;}
+.topbar-left h1{font-size:17px;}
+.topbar-left p{font-size:11.5px;}
+.content{padding:16px 20px 32px;}
+.search-input{width:240px;padding:7px 11px;font-size:12.5px;}
+.stat-grid{grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px;}
+.stat-card{padding:14px 14px 12px;border-radius:14px;}
+.stat-ic{width:38px;height:38px;font-size:18px;}
+.stat-label{font-size:11.5px;}
+.stat-value{font-size:22px;margin:6px 0 4px;}
+.stat-foot{font-size:11px;}
+.hero-panel{padding:16px 18px;border-radius:16px;}
+.panel{border-radius:14px;}
+.panel-head,.panel-header{padding:14px 16px;}
+.panel-body{padding:14px 16px;}
+.table th,.table td{padding:10px 12px;font-size:12.5px;}
+.btn-primary{padding:8px 14px;font-size:13px;}
+.assistant-drawer{width:340px;}
+.assistant-action{padding:9px 11px;font-size:12px;}
+/* 中屏以下自动双列 */
+@media (max-width:1200px){
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media (max-width:768px){
+  .stat-grid{grid-template-columns:1fr;}
+  .content{padding:12px 14px 24px;}
+  .app-topbar{padding:8px 12px;}
+}
+
 </style>
 </head>
 <body>
