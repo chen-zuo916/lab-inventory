@@ -10295,6 +10295,55 @@ body.assistant-open{overflow:hidden;}
 .ai-trigger{ display:none; }
 .assistant-drawer{ display:none; }
 
+/* ============ 智能助手：聊天机器人 ============ */
+.assistant-messages{flex:1;overflow:auto;display:flex;flex-direction:column;gap:10px;padding-bottom:4px;}
+.assistant-msg{display:flex;align-items:flex-end;gap:8px;max-width:100%;}
+.assistant-msg.bot{justify-content:flex-start;}
+.assistant-msg.user{justify-content:flex-end;}
+.msg-avatar{
+  width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;font-size:10px;font-weight:700;color:#fff;
+}
+.msg-avatar.bot{background:linear-gradient(135deg,#ec4899,#a855f7);}
+.msg-avatar.user{background:#cbd5e1;color:#334155;}
+.msg-avatar.bot .robot-head{transform:scale(.55);}
+.msg-bubble{
+  max-width:calc(100% - 40px);padding:10px 12px;border-radius:14px;font-size:13px;line-height:1.6;
+  background:#f8fafc;color:#334155;word-break:break-word;
+}
+.msg-bubble.user{background:linear-gradient(135deg,#ec4899,#f472b6);color:#fff;border-bottom-right-radius:4px;}
+.msg-bubble.bot{background:#fff;border:1px solid #fce7f3;border-bottom-left-radius:4px;}
+
+/* 常见问题快捷芯片 */
+.assistant-chips{display:flex;flex-wrap:wrap;gap:8px;padding:10px 0;border-top:1px solid #fce7f3;}
+.assistant-chip{
+  padding:5px 10px;border-radius:999px;border:1px solid #fce7f3;background:#fff5fa;
+  color:#be185d;font-size:12px;cursor:pointer;transition:.15s;white-space:nowrap;
+}
+.assistant-chip:hover{background:#ec4899;color:#fff;border-color:#ec4899;}
+
+/* 输入框 */
+.assistant-input{
+  display:flex;align-items:center;gap:8px;padding:8px;border:1px solid #fce7f3;border-radius:14px;background:#fff;
+  margin-top:4px;
+}
+.assistant-input input{
+  flex:1;border:none;outline:none;background:transparent;font-size:13px;color:#334155;
+}
+.assistant-input input::placeholder{color:#94a3b8;}
+.assistant-send{
+  width:30px;height:30px;border-radius:50%;border:none;background:linear-gradient(135deg,#ec4899,#a855f7);
+  color:#fff;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;
+}
+.assistant-send:hover{filter:brightness(1.1);}
+
+/* 隐藏旧的快捷操作与 FAQ 区块（若还有残留） */
+.assistant-actions,.assistant-faq{display:none !important;}
+
+/* 调整助手面板 body 间距，让聊天更紧凑 */
+.assistant-float .assistant-body{gap:8px;padding:10px 14px 12px;}
+.assistant-float .assistant-foot{padding:8px 14px;font-size:11px;}
+
 </style>
 </head>
 <body>
@@ -10689,7 +10738,7 @@ body.assistant-open{overflow:hidden;}
 </div>
 
 <!-- 智能助手：悬浮机器人 -->
-<button class="robot-bubble" id="btnAi" hidden onclick="toggleAssistant()" title="智能助手" aria-label="打开智能助手">
+<button class="robot-bubble" id="btnAi" hidden title="智能助手" aria-label="打开智能助手">
   <div class="robot-head">
     <div class="robot-antenna"></div>
     <div class="robot-eyes"><span></span><span></span></div>
@@ -12733,44 +12782,89 @@ var DB = (function () {
     }
   }
 
-  /* ================= 智能助手（本地使用指引） ================= */
+  /* ================= 智能助手（本地聊天机器人） ================= */
+  var ASSISTANT_KB = [
+    { q: ['怎么登记借用','登记借用','借东西','借用'], a: '进入「借阅管理」→ 点「登记借用」→ 选择物料、填写借用人与应还日期 → 保存。库存会自动扣减，并在看板生成一笔待还记录。' },
+    { q: ['怎么归还','归还物料','还东西','归还'], a: '进入「借阅管理」→ 在列表中找到对应借用记录 → 点「归还」按钮，填写实际归还时间即可。' },
+    { q: ['新增物料','加物料','录入物料','添加器材'], a: '进入「物料管理」→ 点「新增物料」，填写名称、规格、数量、存放位置、有效期等信息后保存。' },
+    { q: ['过期','缺货','库存预警','快过期'], a: '在「物料管理」里点对应行的「编辑」，调整有效期或安全库存线；返回「库存看板」会用橙色标记预警项。' },
+    { q: ['共享数据','多台手机','同步','换设备','数据同步','supabase','Supabase'], a: '进入「系统设置 → 数据同步」，填入 Supabase 的 Project URL 与 anon public 密钥并保存。所有设备连接同一 Supabase 项目后即可共享数据。' },
+    { q: ['忘记密码','密码忘了','重置密码'], a: '请让管理员在「成员管理」中为你重置密码；当前版本密码保存在各自浏览器本地，未接云端认证。' },
+    { q: ['管理员','怎么成为管理员','注册码','管理员注册码'], a: '首个注册账号自动成为管理员。后续成员想成为管理员，需要先在「个人中心」填写现有管理员提供的「管理员注册码」并申请。' },
+    { q: ['成员管理','用户管理','删除用户','注销账号'], a: '管理员进入「成员管理」，可查看社团名册、调整角色、重置密码或删除账号（不能删除自己）。' },
+    { q: ['导出','备份','json','导入'], a: '在「系统设置 → 数据备份」中，可以导出 JSON 备份或导入已有的 JSON 文件。' },
+    { q: ['个人中心','修改资料','改密码','改手机号'], a: '点击左侧「个人中心」，可修改姓名、班级、专业、手机号、个人简介，也能修改登录密码。' },
+    { q: ['看板','首页','统计'], a: '「库存看板」展示物料总数、在借数、预警数、到期数等统计，以及最近借用和预警清单。' },
+    { q: ['你是谁','你能做什么','有什么功能'], a: '我是智能机器人社团的小助手，可以回答关于本系统借用、归还、物料管理、数据同步、密码重置等常见问题。' }
+  ];
+  function answerAssistant(text) {
+    var t = (text || '').trim();
+    if (!t) return '你好，想问什么呢？';
+    var lower = t.toLowerCase();
+    var best = null, bestScore = 0;
+    for (var i = 0; i < ASSISTANT_KB.length; i++) {
+      var k = ASSISTANT_KB[i];
+      for (var j = 0; j < k.q.length; j++) {
+        var qj = k.q[j].toLowerCase();
+        if (lower === qj) return k.a;
+        if (lower.indexOf(qj) !== -1 && qj.length > bestScore) { bestScore = qj.length; best = k; }
+      }
+    }
+    if (best) return best.a;
+    return '抱歉，我暂时没听懂「' + esc(t) + '」。你可以问：怎么登记借用、怎么归还、忘记密码、多台手机共享数据、怎么成为管理员等。';
+  }
+  function addAssistantMessage(role, html) {
+    var wrap = $('assistantMessages'); if (!wrap) return;
+    var div = document.createElement('div');
+    div.className = 'assistant-msg ' + role;
+    div.innerHTML = role === 'bot'
+      ? '<div class="msg-avatar bot"><div class="robot-head mini"><div class="robot-eyes"><span></span><span></span></div></div></div><div class="msg-bubble">' + html + '</div>'
+      : '<div class="msg-bubble user">' + esc(html) + '</div><div class="msg-avatar user">我</div>';
+    wrap.appendChild(div);
+    wrap.scrollTop = wrap.scrollHeight;
+  }
   function renderAssistant() {
     var body = $('assistantBody'); if (!body) return;
-    var quick = [
-      { t: '登记借用', v: 'loans', arg: 'openLoan' },
-      { t: '归还物料', v: 'loans', arg: 'openReturn' },
-      { t: '新增物料', v: 'items', arg: 'openItem' },
-      { t: '导出备份', v: 'settings', arg: 'exportAll' },
-      { t: '成员管理', v: 'members' },
-      { t: '个人中心', v: 'profile' }
-    ];
     var faq = [
-      ['如何登记一笔借用？', '进入「借阅管理」，点「登记借用」，选择物料、填写借用人与应还日期即可，库存会自动扣减。'],
-      ['物料快过期 / 缺货了怎么办？', '在「物料管理」里点对应行的编辑，调整有效期或安全库存线；看板会用橙色标记预警项。'],
-      ['多台手机怎么共享数据？', '在「系统设置 → 数据同步」填入 Supabase 地址与密钥，所有设备即可共享同一份数据。'],
-      ['忘记密码了？', '请让管理员在「成员管理」中为你重置密码；当前版本密码保存在各自浏览器本地。']
+      '怎么登记借用？', '怎么归还？', '物料快过期怎么办？',
+      '多台手机怎么共享数据？', '忘记密码？', '怎么成为管理员？'
     ];
     body.innerHTML =
-      '<div class="assistant-section"><div class="assistant-section-title">快捷操作</div><div class="assistant-actions">' +
-        quick.map(function (q) {
-          return '<button class="assistant-action" data-v="' + q.v + '" data-arg="' + (q.arg || '') + '">' + q.t + '</button>';
-        }).join('') +
-      '</div></div>' +
-      '<div class="assistant-section"><div class="assistant-section-title">常见问题</div>' +
-        faq.map(function (f) {
-          return '<div class="assistant-faq"><div class="assistant-q">' + esc(f[0]) + '</div><div class="assistant-a">' + esc(f[1]) + '</div></div>';
-        }).join('') +
-      '</div>';
-    body.querySelectorAll('.assistant-action').forEach(function (b) {
-      b.addEventListener('click', function () {
-        var v = b.getAttribute('data-v'), a = b.getAttribute('data-arg');
-        toggleAssistant();
-        switchView(v);
-        if (a === 'openLoan') setTimeout(function () { var el = $('btnAddLoan'); if (el) el.click(); }, 200);
-        else if (a === 'openItem') setTimeout(function () { var el = $('btnAddItem'); if (el) el.click(); }, 200);
-        else if (a === 'exportAll') setTimeout(function () { var el = $('btnExportAll'); if (el) el.click(); }, 200);
+      '<div class="assistant-messages" id="assistantMessages">' +
+        '<div class="assistant-msg bot">' +
+          '<div class="msg-avatar bot"><div class="robot-head mini"><div class="robot-eyes"><span></span><span></span></div></div></div>' +
+          '<div class="msg-bubble">嗨，我是社团小助手 🤖 有问题直接问我，也可以点下面的常见问题～</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="assistant-chips" id="assistantChips">' +
+        faq.map(function (q) { return '<button class="assistant-chip" type="button">' + esc(q) + '</button>'; }).join('') +
+      '</div>' +
+      '<form class="assistant-input" id="assistantForm">' +
+        '<input type="text" id="assistantInput" placeholder="输入问题，例如：怎么登记借用？" autocomplete="off">' +
+        '<button type="submit" class="assistant-send" aria-label="发送">➤</button>' +
+      '</form>';
+    var chips = $('assistantChips');
+    if (chips) {
+      chips.querySelectorAll('.assistant-chip').forEach(function (c) {
+        c.addEventListener('click', function () { askAssistant(c.textContent); });
       });
-    });
+    }
+    var form = $('assistantForm');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var inp = $('assistantInput');
+        askAssistant(inp.value);
+        inp.value = '';
+      });
+    }
+  }
+  function askAssistant(text) {
+    text = (text || '').trim(); if (!text) return;
+    addAssistantMessage('user', text);
+    setTimeout(function () {
+      addAssistantMessage('bot', answerAssistant(text));
+    }, 250 + Math.random() * 150);
   }
   function toggleAssistant() {
     var d = $('assistantDrawer'), m = $('assistantMask'), b = $('btnAi');
@@ -12781,6 +12875,38 @@ var DB = (function () {
     if (open && !d.dataset.built) { renderAssistant(); d.dataset.built = '1'; }
   }
   window.toggleAssistant = toggleAssistant;
+
+  function bindBubbleDrag() {
+    var b = $('btnAi');
+    if (!b || b.dataset.dragBound) return;
+    b.dataset.dragBound = '1';
+    var sx = 0, sy = 0, ox = 0, oy = 0, dx = 0, dy = 0, dragging = false, moved = false, rect;
+    b.addEventListener('mousedown', function (e) {
+      dragging = true; moved = false;
+      rect = b.getBoundingClientRect();
+      ox = rect.left; oy = rect.top;
+      sx = e.clientX; sy = e.clientY;
+      b.style.transition = 'none';
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', function (e) {
+      if (!dragging) return;
+      dx = e.clientX - sx; dy = e.clientY - sy;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) moved = true;
+      b.style.left = Math.min(Math.max(ox + dx, 8), window.innerWidth - rect.width - 8) + 'px';
+      b.style.right = 'auto';
+      b.style.bottom = Math.min(Math.max(window.innerHeight - (oy + dy) - rect.height, 8), window.innerHeight - 8) + 'px';
+    });
+    window.addEventListener('mouseup', function () {
+      if (!dragging) return;
+      dragging = false;
+      b.style.transition = '';
+    });
+    b.addEventListener('click', function (e) {
+      if (moved) { e.preventDefault(); e.stopPropagation(); moved = false; return false; }
+      toggleAssistant();
+    });
+  }
 
   function bindAssistantDrag() {
     var d = $('assistantDrawer');
@@ -12832,6 +12958,7 @@ var DB = (function () {
     fillDicts();
     bind();
     bindAssistantDrag();
+    bindBubbleDrag();
     if (typeof updateSyncUI === 'function') updateSyncUI();
     if (DB.currentUser()) {
       applyAuth();
