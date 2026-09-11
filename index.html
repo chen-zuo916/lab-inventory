@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <!-- 自包含单文件版：CSS 与 JS 已内联，可直接双击打开或部署 -->
 <title>实验室物料库存与借阅管理平台</title>
 <script>window.__LAB_SYNC={"url":"https://yfyhpinyxhbbuustjdvk.supabase.co","key":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlmeWhwaW55eGhiYnV1c3RqZHZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTE4NDksImV4cCI6MjEwNDUyNzg0OX0.ZNj4BD7XnxJIHETejtZcMT9Nfm9UpZbjs4DkcYmJeGo"}</script>
@@ -12617,14 +12620,16 @@ var DB = (function () {
     if (DB.syncEnabled()) {
       try { await DB.syncPull(); } catch (e) { console.warn('启动同步失败', e); }
     }
-    // 只有全新且没有任何数据时才载入示例数据
-    if (isFirst || (!DB.state.items.length && !DB.state.logs.length && !DB.state.users.length)) {
+    // 同步后若仍没有任何数据，才载入示例数据；若云端已存在账号/记录则保留
+    var hasData = DB.state.items.length || DB.state.loans.length || DB.state.logs.length || DB.state.users.length;
+    if (!hasData) {
       var d = window.SEED.build();
       DB.state.settings = DB.settings;
       DB.state.items = d.items;
       DB.state.loans = d.loans;
       DB.state.logs = d.logs;
       DB.save();
+      setTimeout(function () { toast('已为你载入一套示例数据，可在「系统设置」中清空', 'ok'); }, 500);
     }
     refreshChrome();
     fillDicts();
@@ -12636,7 +12641,6 @@ var DB = (function () {
     } else {
       showAuth();
     }
-    if (isFirst) setTimeout(function () { toast('已为你载入一套示例数据，可在「系统设置」中清空', 'ok'); }, 500);
     startAutoSync(12000);
   }
 
