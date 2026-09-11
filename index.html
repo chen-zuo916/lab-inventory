@@ -10202,6 +10202,99 @@ body.assistant-open{overflow:hidden;}
   .app-topbar{padding:8px 12px;}
 }
 
+/* ============ 智能助手：悬浮机器人 ============ */
+/* 右下角悬浮机器人按钮 */
+.robot-bubble{
+  position:fixed; right:22px; bottom:22px; z-index:1000;
+  width:64px; height:64px; border-radius:50%;
+  border:none; outline:none; cursor:pointer;
+  background:linear-gradient(135deg,#ec4899,#a855f7 60%,#06b6d4);
+  box-shadow:0 6px 22px rgba(236,72,153,.35), 0 0 0 4px rgba(236,72,153,.1);
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+}
+.robot-bubble:hover{ transform:scale(1.08) translateY(-2px); box-shadow:0 8px 28px rgba(236,72,153,.45), 0 0 0 6px rgba(236,72,153,.14); }
+.robot-bubble:active{ transform:scale(.96); }
+.robot-bubble.pulse{ animation:robotPulse 2s infinite; }
+@keyframes robotPulse{
+  0%{ box-shadow:0 6px 22px rgba(236,72,153,.35), 0 0 0 0 rgba(236,72,153,.25); }
+  70%{ box-shadow:0 6px 22px rgba(236,72,153,.35), 0 0 0 12px rgba(236,72,153,0); }
+  100%{ box-shadow:0 6px 22px rgba(236,72,153,.35), 0 0 0 0 rgba(236,72,153,0); }
+}
+
+/* 机器人头部 */
+.robot-head{
+  position:relative; width:38px; height:30px; border-radius:14px 14px 10px 10px;
+  background:#fff; box-shadow:inset 0 -3px 0 rgba(0,0,0,.06);
+  display:flex; align-items:center; justify-content:center;
+}
+.robot-head.mini{ width:22px; height:18px; border-radius:9px 9px 6px 6px; }
+.robot-antenna{
+  position:absolute; top:-8px; left:50%; transform:translateX(-50%);
+  width:5px; height:9px; background:#fff; border-radius:3px;
+}
+.robot-antenna::after{
+  content:''; position:absolute; top:-5px; left:50%; transform:translateX(-50%);
+  width:8px; height:8px; border-radius:50%; background:#06b6d4;
+  box-shadow:0 0 0 2px rgba(255,255,255,.6);
+}
+.robot-eyes{
+  position:absolute; top:9px; left:50%; transform:translateX(-50%);
+  display:flex; gap:7px;
+}
+.robot-head.mini .robot-eyes{ top:5px; gap:3px; }
+.robot-eyes span{
+  width:8px; height:8px; border-radius:50%; background:#1f2937;
+  animation:robotBlink 4s infinite;
+}
+.robot-head.mini .robot-eyes span{ width:4px; height:4px; }
+@keyframes robotBlink{
+  0%,48%,52%,100%{ transform:scaleY(1); }
+  50%{ transform:scaleY(.15); }
+}
+.robot-mouth{
+  position:absolute; bottom:5px; left:50%; transform:translateX(-50%);
+  width:10px; height:4px; border-radius:0 0 5px 5px; background:#1f2937;
+}
+
+/* 悬浮助手窗口 */
+.assistant-float{
+  position:fixed; right:18px; bottom:94px; z-index:1001;
+  width:340px; max-width:calc(100vw - 36px); max-height:calc(100vh - 120px);
+  background:#fff; border:1px solid #fce7f3; border-radius:18px;
+  box-shadow:0 16px 50px rgba(0,0,0,.16), 0 0 0 1px rgba(236,72,153,.08);
+  display:flex; flex-direction:column; overflow:hidden;
+  transform-origin:bottom right;
+  animation:floatIn .25s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes floatIn{
+  from{ opacity:0; transform:scale(.85) translateY(12px); }
+  to{ opacity:1; transform:scale(1) translateY(0); }
+}
+.assistant-float-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 14px; border-bottom:1px solid #fce7f3;
+  cursor:move; user-select:none;
+  background:linear-gradient(90deg,#fff,#fff5fa);
+}
+.assistant-float-head .assistant-title{
+  display:flex; align-items:center; gap:8px; font-weight:700; font-size:14px; color:#be185d;
+}
+.assistant-float-head .icon-btn{
+  width:28px; height:28px; border-radius:50%; border:none; background:transparent;
+  color:#64748b; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+}
+.assistant-float-head .icon-btn:hover{ background:#fce7f3; color:#be185d; }
+.assistant-float .assistant-body{ flex:1; overflow:auto; padding:14px; display:flex; flex-direction:column; gap:14px; }
+.assistant-float .assistant-foot{ padding:10px 14px; border-top:1px solid #fce7f3; }
+
+/* 拖动时样式 */
+.assistant-float.dragging{ opacity:.92; box-shadow:0 24px 70px rgba(0,0,0,.22); transition:none; }
+
+/* 旧的助手样式失效保护 */
+.ai-trigger{ display:none; }
+.assistant-drawer{ display:none; }
+
 </style>
 </head>
 <body>
@@ -10257,9 +10350,6 @@ body.assistant-open{overflow:hidden;}
         <p id="pageDesc">社团器材实时状态总览</p>
       </div>
       <div class="topbar-right">
-        <button class="ai-trigger" id="btnAi" onclick="toggleAssistant()" title="智能助手">
-          <span class="ai-dot"></span> AI 中枢
-        </button>
         <span class="sync-pill" id="syncPill" hidden>已同步</span>
         <input type="search" id="globalSearch" class="search-input" placeholder="搜索物料 / 借用人 / 编号…" autocomplete="off">
         <button class="btn btn-primary" id="btnQuickAdd"><i class="ic ic-plus"></i>新增物料</button>
@@ -10598,11 +10688,22 @@ body.assistant-open{overflow:hidden;}
   </main>
 </div>
 
-<!-- 智能助手抽屉 -->
+<!-- 智能助手：悬浮机器人 -->
+<button class="robot-bubble" id="btnAi" hidden onclick="toggleAssistant()" title="智能助手" aria-label="打开智能助手">
+  <div class="robot-head">
+    <div class="robot-antenna"></div>
+    <div class="robot-eyes"><span></span><span></span></div>
+    <div class="robot-mouth"></div>
+  </div>
+</button>
+
 <div class="assistant-mask" id="assistantMask" hidden onclick="if(event.target===this)toggleAssistant()"></div>
-<aside class="assistant-drawer" id="assistantDrawer" hidden>
-  <div class="assistant-head">
-    <div class="assistant-title"><span class="ai-dot"></span> 智能助手</div>
+<aside class="assistant-float" id="assistantDrawer" hidden>
+  <div class="assistant-float-head">
+    <div class="assistant-title">
+      <div class="robot-head mini"><div class="robot-eyes"><span></span><span></span></div></div>
+      智能助手
+    </div>
     <button class="icon-btn" onclick="toggleAssistant()">✕</button>
   </div>
   <div class="assistant-body" id="assistantBody"></div>
@@ -12379,6 +12480,8 @@ var DB = (function () {
     });
     renderAuthForm();
     $('authMask').hidden = false;
+    var b = $('btnAi'); if (b) { b.hidden = true; b.classList.remove('pulse'); }
+    var d = $('assistantDrawer'); if (d) d.hidden = true;
   }
   function renderAuthForm() {
     var st = DB.settings;
@@ -12462,6 +12565,7 @@ var DB = (function () {
     $('authMask').hidden = true;
     applyAuth();
     refreshChrome(); fillDicts();
+    var b = $('btnAi'); if (b) b.hidden = false;
     switchView('dashboard');
     var u = DB.currentUser();
     toast('欢迎，' + u.name + '（' + (u.role === 'admin' ? '管理员' : '学生') + '）', 'ok');
@@ -12669,13 +12773,41 @@ var DB = (function () {
     });
   }
   function toggleAssistant() {
-    var d = $('assistantDrawer'), m = $('assistantMask');
+    var d = $('assistantDrawer'), m = $('assistantMask'), b = $('btnAi');
     if (!d) return;
     var open = d.hidden;
-    d.hidden = !open; m.hidden = !open;
+    d.hidden = !open; if (m) m.hidden = !open;
+    if (b) b.classList.toggle('pulse', !open);
     if (open && !d.dataset.built) { renderAssistant(); d.dataset.built = '1'; }
   }
   window.toggleAssistant = toggleAssistant;
+
+  function bindAssistantDrag() {
+    var d = $('assistantDrawer');
+    if (!d || d.dataset.dragBound) return;
+    d.dataset.dragBound = '1';
+    var head = d.querySelector('.assistant-float-head');
+    if (!head) return;
+    var sx = 0, sy = 0, dx = 0, dy = 0, ox = 0, oy = 0, dragging = false, rect;
+    head.addEventListener('mousedown', function (e) {
+      if (e.target.closest('.icon-btn')) return;
+      dragging = true; d.classList.add('dragging');
+      rect = d.getBoundingClientRect();
+      ox = rect.left; oy = rect.top;
+      sx = e.clientX; sy = e.clientY;
+      e.preventDefault();
+    });
+    window.addEventListener('mousemove', function (e) {
+      if (!dragging) return;
+      dx = e.clientX - sx; dy = e.clientY - sy;
+      var w = rect ? rect.width : d.offsetWidth, h = rect ? rect.height : d.offsetHeight;
+      d.style.left = Math.min(Math.max(ox + dx, 8), window.innerWidth - w - 8) + 'px';
+      d.style.right = 'auto';
+      d.style.bottom = Math.min(Math.max(window.innerHeight - (oy + dy) - h, 8), window.innerHeight - 80) + 'px';
+      e.preventDefault();
+    });
+    window.addEventListener('mouseup', function () { if (dragging) { dragging = false; d.classList.remove('dragging'); } });
+  }
 
   /* ================= 启动 ================= */
   async function init() {
@@ -12699,6 +12831,7 @@ var DB = (function () {
     refreshChrome();
     fillDicts();
     bind();
+    bindAssistantDrag();
     if (typeof updateSyncUI === 'function') updateSyncUI();
     if (DB.currentUser()) {
       applyAuth();
