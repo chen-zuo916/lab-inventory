@@ -10281,10 +10281,13 @@ body.assistant-open{overflow:hidden;}
   display:flex; align-items:center; gap:8px; font-weight:700; font-size:14px; color:#be185d;
 }
 .assistant-float-head .icon-btn{
-  width:28px; height:28px; border-radius:50%; border:none; background:transparent;
-  color:#64748b; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  width:40px; height:40px; border-radius:50%; border:none; background:transparent;
+  color:#64748b; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  -webkit-tap-highlight-color:transparent; tap-highlight-color:transparent;
+  position:relative; z-index:10;
 }
 .assistant-float-head .icon-btn:hover{ background:#fce7f3; color:#be185d; }
+.assistant-float-head .icon-btn:active{ transform:scale(.92); }
 .assistant-float .assistant-body{ flex:1; overflow:auto; padding:14px; display:flex; flex-direction:column; gap:14px; }
 .assistant-float .assistant-foot{ padding:10px 14px; border-top:1px solid #fce7f3; }
 
@@ -10782,7 +10785,7 @@ body.assistant-open{overflow:hidden;}
       <div class="robot-head mini"><div class="robot-eyes"><span></span><span></span></div></div>
       智能助手
     </div>
-    <button class="icon-btn assistant-close" id="assistantCloseBtn">✕</button>
+    <button class="icon-btn assistant-close" id="assistantCloseBtn" onclick="closeAssistant(event)" aria-label="关闭" type="button">✕</button>
   </div>
   <div class="assistant-body" id="assistantBody"></div>
   <div class="assistant-foot">
@@ -12887,6 +12890,7 @@ var DB = (function () {
         inp.value = '';
       });
     }
+    bindAssistantClose();
   }
   function askAssistant(text) {
     text = (text || '').trim(); if (!text) return;
@@ -12896,9 +12900,9 @@ var DB = (function () {
     }, 250 + Math.random() * 150);
   }
   function closeAssistant(e) {
-    if (e && e.stopPropagation) e.stopPropagation();
+    try { if (e && e.stopPropagation) e.stopPropagation(); } catch (err) {}
     var d = $('assistantDrawer'), m = $('assistantMask'), b = $('btnAi');
-    if (d) { d.hidden = true; }
+    if (d) { d.hidden = true; d.classList.remove('dragging'); }
     if (m) { m.hidden = true; }
     if (b) { b.classList.remove('pulse'); }
   }
@@ -12908,16 +12912,10 @@ var DB = (function () {
     var open = d.hidden;
     d.hidden = !open; if (m) m.hidden = !open;
     if (b) b.classList.toggle('pulse', !open);
-    if (open && !d.dataset.built) { renderAssistant(); d.dataset.built = '1'; }
     if (open) {
-      setTimeout(function () {
-        document.addEventListener('click', function closeOnOutside(e) {
-          if (!d || d.hidden) return;
-          if (d.contains(e.target) || (b && b.contains(e.target))) return;
-          if (e.target.closest && e.target.closest('.assistant-close')) return;
-          toggleAssistant();
-        }, { once: true });
-      }, 0);
+      if (!d.dataset.built) { renderAssistant(); d.dataset.built = '1'; }
+      bindAssistantClose();
+      bindAssistantDrag();
     }
   }
   window.toggleAssistant = toggleAssistant;
@@ -12984,15 +12982,24 @@ var DB = (function () {
 
   function bindAssistantClose() {
     var btn = $('assistantCloseBtn');
-    if (!btn || btn.dataset.bound) return;
-    btn.dataset.bound = '1';
-    btn.addEventListener('click', function (e) {
-      e.stopPropagation();
-      closeAssistant();
-    });
-    btn.addEventListener('touchstart', function (e) {
-      e.stopPropagation();
-    }, { passive: true });
+    if (!btn) return;
+    if (!btn.dataset.bound) {
+      btn.dataset.bound = '1';
+      btn.addEventListener('click', function (e) {
+        if (e && e.stopPropagation) e.stopPropagation();
+        closeAssistant();
+      });
+      btn.addEventListener('touchend', function (e) {
+        if (e && e.preventDefault) e.preventDefault();
+        if (e && e.stopPropagation) e.stopPropagation();
+        closeAssistant();
+      }, { passive: false });
+      btn.addEventListener('touchstart', function (e) {
+        if (e && e.stopPropagation) e.stopPropagation();
+      }, { passive: true });
+    }
+    // 兜底：内联 onclick 可能因缓存未生效，确保全局函数存在
+    window.closeAssistant = closeAssistant;
   }
 
   /* ================= 启动 ================= */
