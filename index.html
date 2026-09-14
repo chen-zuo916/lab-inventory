@@ -11642,6 +11642,9 @@ var DB = (function () {
   var esc = DB.escapeHtml;
   var S = function () { return DB.state; };
 
+  // 当前部署版本号（每次重新部署时修改这里，用于自动检测更新）
+  var APP_VER = '20260914_1006';
+
   var UI = {
     view: 'dashboard',
     search: '',
@@ -13023,6 +13026,26 @@ var DB = (function () {
     }, { passive: false });
   }
 
+  /* ================= 自动检测新版本并强制刷新 ================= */
+  // 微信/WebView 会强缓存 HTML，导致一直显示旧版。
+  // 这里以 no-store 重新拉取当前页，比对内嵌版本号；若不同则整页重载，
+  // 让用户每次打开都自动用上最新版，无需手动清缓存。
+  function checkForUpdate() {
+    try {
+      var base = location.href.split('#')[0].split('?')[0];
+      var url = base + (base.indexOf('?') >= 0 ? '&' : '?') + '_upd=' + Date.now();
+      fetch(url, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } })
+        .then(function (r) { return r.text(); })
+        .then(function (t) {
+          var m = t && t.match(/APP_VER\s*=\s*['"]([^'"]+)['"]/);
+          if (m && m[1] && m[1] !== APP_VER) {
+            location.reload(true);
+          }
+        })
+        .catch(function () { /* 离线或 file:// 打开时忽略 */ });
+    } catch (e) { /* 忽略 */ }
+  }
+
   /* ================= 启动 ================= */
   async function init() {
     var isFirst = !localStorage.getItem(DB.KEY);
@@ -13057,6 +13080,8 @@ var DB = (function () {
       showAuth();
     }
     startAutoSync(12000);
+    // 打开后稍等再自检版本，避免干扰首屏渲染
+    setTimeout(checkForUpdate, 1500);
   }
 
   // 后台轻量轮询：云端有变化时才刷新界面，避免打断正在进行的操作
