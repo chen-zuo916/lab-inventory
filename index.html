@@ -10378,6 +10378,22 @@ body.assistant-open{overflow:hidden;}
   font-size:18px;background:linear-gradient(135deg,#ec4899,#06b6d4);
 }
 
+/* ============ 兼容性补丁：iOS 输入聚焦防缩放 + 小屏表格滚动 ============ */
+@media (max-width:768px){
+  /* iOS Safari/微信 WebView：输入框字号 <16px 聚焦时会自动放大页面，统一提到 16px */
+  input,select,textarea{font-size:16px !important;}
+  /* 表格横向可滚动，避免内容被压坏 */
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .table{min-width:640px;}
+  .form-grid{grid-template-columns:1fr 1fr;}
+  .field-full{grid-column:1 / -1;}
+}
+/* 触摸目标最小 40px，便于手机点按 */
+@media (pointer:coarse){
+  .mini-btn{min-height:34px;}
+  .btn{min-height:40px;}
+}
+
 </style>
 </head>
 <body>
@@ -10559,6 +10575,7 @@ body.assistant-open{overflow:hidden;}
             <button class="btn btn-ghost" id="btnResetFilter">重置</button>
           </div>
           <div class="toolbar-right">
+            <button class="btn btn-ghost" id="btnImportTable"><i class="ic ic-up"></i>导入表格</button>
             <button class="btn btn-ghost" id="btnExportItems"><i class="ic ic-down"></i>导出 CSV</button>
             <button class="btn btn-primary" id="btnAddItem"><i class="ic ic-plus"></i>新增物料</button>
           </div>
@@ -10575,6 +10592,7 @@ body.assistant-open{overflow:hidden;}
                   <th>规格型号</th>
                   <th class="sortable" data-sort="location">存放位置</th>
                   <th class="sortable right" data-sort="quantity">库存</th>
+                  <th class="right">借出中</th>
                   <th class="right">安全线</th>
                   <th class="sortable right" data-sort="expiry">有效期至</th>
                   <th>状态</th>
@@ -11041,10 +11059,10 @@ var DB = (function () {
     } catch (e) { /* 忽略同步配置错误 */ }
     return state;
   }
-  function save() {
+  function save(skipPush) {
     try { localStorage.setItem(KEY, JSON.stringify(state)); }
     catch (e) { console.error('保存失败', e); }
-    if (typeof Sync !== 'undefined' && Sync.isEnabled()) pushAll();
+    if (!skipPush && typeof Sync !== 'undefined' && Sync.isEnabled()) pushAll();
   }
   /** 将各集合推送到云端（按 id upsert，last-write-wins） */
   function pushAll() {
@@ -11073,6 +11091,20 @@ var DB = (function () {
     if (typeof Sync === 'undefined' || !Sync.isEnabled()) return false;
     try {
       var remote = await Sync.pull();
+      // 清空同步保护：云端 settings.clearedRev 比本地新，说明云端被（本端或其他端）清空过，
+      // 此时以云端为准整体替换本地（即使云端为空），绝不能把本地旧数据回推上去
+      var remoteRev = remote.settings && num(remote.settings.clearedRev, 0) || 0;
+      var localRev = state.settings && num(state.settings.clearedRev, 0) || 0;
+      if (remoteRev > localRev) {
+        state.settings = Object.assign({}, DEFAULT_SETTINGS, remote.settings || {});
+        state.items = remote.items || [];
+        state.loans = remote.loans || [];
+        state.logs = remote.logs || [];
+        state.users = remote.users || [];
+        state.session = '';
+        save(true);
+        return true;
+      }
       var changed = false;
       ['items', 'loans', 'logs', 'users'].forEach(function (c) {
         if (remote[c] && remote[c].length) { state[c] = remote[c]; changed = true; }
@@ -11619,7 +11651,7 @@ var DB = (function () {
   var S = function () { return DB.state; };
 
   // 当前部署版本号（每次重新部署时修改这里，用于自动检测更新）
-  var APP_VER = '20260914_1300';
+  var APP_VER = '20260914_1330';
 
   var UI = {
     view: 'dashboard',
@@ -11858,12 +11890,22 @@ var DB = (function () {
     }
     return '<span class="tag tag-green">充足</span>';
   }
+  /** 某物料当前借出未还数量（随借出 / 归还自动变化） */
+  function lentQty(itemId) {
+    var n = 0;
+    S().loans.forEach(function (l) {
+      if (l.itemId === itemId && l.returnedQty < l.quantity) n += (l.quantity - l.returnedQty);
+    });
+    return Math.round(n * 1000) / 1000;
+  }
+
   function renderItems() {
     var list = filteredItems();
     $('itemCount').textContent = '共 ' + list.length + ' 条' + (list.length !== S().items.length ? '（总 ' + S().items.length + ' 条）' : '');
     $('itemRows').innerHTML = list.length ? list.map(function (it) {
       var ratio = it.safeMin > 0 ? Math.min(1, it.quantity / (it.safeMin * 2)) : 1;
       var color = DB.itemStatus(it) === 'normal' ? '#16a34a' : (it.quantity <= 0 ? '#dc2626' : '#d97706');
+      var lent = lentQty(it.id);
       return '<tr>' +
         '<td><span class="cell-sub">' + esc(it.code) + '</span></td>' +
         '<td><div class="cell-name">' + esc(it.name) + '</div><div class="cell-sub">' + esc(it.supplier || '未登记供应商') + '</div></td>' +
@@ -11872,6 +11914,7 @@ var DB = (function () {
         '<td>' + esc(it.location || '—') + '</td>' +
         '<td class="right"><b>' + it.quantity + '</b> ' + esc(it.unit) +
         '<div class="bar-mini" style="margin-left:auto"><i style="width:' + (ratio * 100).toFixed(0) + '%;background:' + color + '"></i></div></td>' +
+        '<td class="right">' + (lent > 0 ? '<b style="color:#d97706">' + lent + '</b> ' + esc(it.unit) : '—') + '</td>' +
         '<td class="right">' + it.safeMin + '</td>' +
         '<td class="right">' + (it.expiry ? esc(it.expiry) : '—') + '</td>' +
         '<td>' + statusTag(it) + '</td>' +
@@ -11880,14 +11923,14 @@ var DB = (function () {
           ? '<button class="mini-btn green" data-act="stockIn" data-id="' + it.id + '">入库</button>' +
           '<button class="mini-btn gray" data-act="stockOut" data-id="' + it.id + '">出库</button>' +
           '<button class="mini-btn" data-act="lend" data-id="' + it.id + '">借出</button>' +
-          '<button class="mini-btn gray" data-act="editItem" data-id="' + it.id + '">编辑</button>' +
+          '<button class="mini-btn" data-act="editItem" data-id="' + it.id + '">编辑</button>' +
           '<button class="mini-btn red" data-act="delItem" data-id="' + it.id + '">删除</button>'
           : (it.quantity > 0
             ? '<button class="mini-btn" data-act="lend" data-id="' + it.id + '">借出</button>'
             : '<span class="cell-sub">库存为 0</span>')) +
         '</td></tr>';
-    }).join('') : '<tr><td colspan="10">' + emptyBox('没有匹配的物料',
-      DB.isAdmin() ? '换个关键词，或点击右上角「新增物料」' : '换个关键词试试') + '</td></tr>';
+    }).join('') : '<tr><td colspan="11">' + emptyBox('还没有物料',
+      DB.isAdmin() ? '点击右上角「新增物料」或「导入表格」批量录入' : '请联系管理员录入物料') + '</td></tr>';
   }
 
   /* ================= 借阅管理 ================= */
@@ -12261,6 +12304,225 @@ var DB = (function () {
     toast('已导出 ' + rows.length + ' 条流水', 'ok');
   }
 
+  /* ================= 表格导入（CSV / Excel） ================= */
+  var IMP = { rows: [], mode: 'update', headers: [] };
+  var IMP_FIELDS = [
+    ['code', ['编号', '物料编号', '代码', '编码', '货号', '料号']],
+    ['name', ['名称', '物料名称', '品名', '材料名称']],
+    ['category', ['分类', '类别', '种类']],
+    ['spec', ['规格', '规格型号', '型号', '规格/型号']],
+    ['unit', ['单位', '计量单位', '单位名称']],
+    ['quantity', ['数量', '库存', '库存数量', '当前库存', '现存', '库存量']],
+    ['safeMin', ['安全库存', '安全库存下限', '下限', '最低库存', '警戒线']],
+    ['location', ['位置', '存放位置', '储存位置', '存放地点', '摆放位置']],
+    ['supplier', ['供应商', '生产单位', '生产厂家', '厂家']],
+    ['price', ['单价', '价格', '单价（元）', '单价(元)']],
+    ['lot', ['批号', '批次', '货号批号']],
+    ['expiry', ['有效期', '有效期至', '过期时间', '保质期', '到期日']],
+    ['remark', ['备注', '说明', '备注说明']]
+  ];
+  function normHeader(h) {
+    return String(h === undefined || h === null ? '' : h).toLowerCase()
+      .replace(/\s+/g, '').replace(/[（）()]/g, '').replace(/[：:]/g, '');
+  }
+  /** 表头自动映射到字段 */
+  function mapHeaders(headers) {
+    var map = {}, used = {};
+    headers.forEach(function (h, col) {
+      var n = normHeader(h); if (!n) return;
+      for (var f = 0; f < IMP_FIELDS.length; f++) {
+        var key = IMP_FIELDS[f][0];
+        if (map[key] !== undefined || used[col]) continue;
+        var hit = IMP_FIELDS[f][1].some(function (k) {
+          var nk = normHeader(k);
+          return n === nk || n.indexOf(nk) >= 0;
+        });
+        if (hit) { map[key] = col; used[col] = true; }
+      }
+    });
+    return map;
+  }
+  function normDateVal(v) {
+    var s = String(v === undefined || v === null ? '' : v).trim();
+    if (!s) return '';
+    var m = /^(\d{4})[\/\-\.年](\d{1,2})[\/\-\.月](\d{1,2})日?$/.exec(s);
+    if (m) return m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2);
+    return s;
+  }
+  /** 把一行原始数据按映射转成物料字段对象 */
+  function mapRow(raw, map) {
+    var get = function (k) { return map[k] === undefined ? '' : raw[map[k]]; };
+    return {
+      code: String(get('code')).trim(),
+      name: String(get('name')).trim(),
+      category: String(get('category')).trim(),
+      spec: String(get('spec')).trim(),
+      unit: String(get('unit')).trim() || '个',
+      quantity: DB.num(get('quantity'), 0),
+      safeMin: DB.num(get('safeMin'), 0),
+      location: String(get('location')).trim(),
+      supplier: String(get('supplier')).trim(),
+      price: DB.num(get('price'), 0),
+      lot: String(get('lot')).trim(),
+      expiry: normDateVal(get('expiry')),
+      remark: String(get('remark')).trim()
+    };
+  }
+  /** 解析 CSV 文本（自动识别分隔符，支持引号转义） */
+  function parseCSVText(text) {
+    text = String(text || '').replace(/^\uFEFF/, '');
+    var head = (text.split(/\r?\n/)[0] || '');
+    var delim = ',';
+    [',', ';', '\t'].forEach(function (d) {
+      if (head.split(d).length > head.split(delim).length) delim = d;
+    });
+    var rows = [], row = [], cur = '', inQ = false, i = 0;
+    while (i < text.length) {
+      var c = text[i];
+      if (inQ) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { cur += '"'; i += 2; continue; }
+          inQ = false; i++; continue;
+        }
+        cur += c; i++; continue;
+      }
+      if (c === '"') { inQ = true; i++; continue; }
+      if (c === delim) { row.push(cur); cur = ''; i++; continue; }
+      if (c === '\r') { i++; continue; }
+      if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; i++; continue; }
+      cur += c; i++;
+    }
+    if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+    return rows.filter(function (r) { return r.some(function (x) { return String(x).trim() !== ''; }); });
+  }
+  /** 按顺序尝试多个 CDN 加载 SheetJS（国内优先），全部失败则 reject */
+  function loadXLSXLib() {
+    if (window.XLSX) return Promise.resolve();
+    var urls = [
+      'https://cdn.bootcdn.net/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+      'https://cdn.staticfile.net/xlsx/0.18.5/xlsx.full.min.js',
+      'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+      'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'
+    ];
+    return new Promise(function (resolve, reject) {
+      var idx = 0;
+      (function tryNext() {
+        if (idx >= urls.length) return reject(new Error('所有 CDN 均加载失败'));
+        var s = document.createElement('script');
+        s.src = urls[idx++];
+        s.onload = function () { window.XLSX ? resolve() : tryNext(); };
+        s.onerror = function () { document.head.removeChild(s); tryNext(); };
+        document.head.appendChild(s);
+      })();
+    });
+  }
+  /** 读取表格文件为二维数组（首行为表头） */
+  function parseTableFile(file) {
+    return new Promise(function (resolve, reject) {
+      var fr = new FileReader();
+      fr.onerror = function () { reject(new Error('文件读取失败')); };
+      fr.onload = async function () {
+        var name = (file.name || '').toLowerCase();
+        try {
+          if (name.endsWith('.csv') || name.endsWith('.txt')) {
+            resolve(parseCSVText(fr.result));
+          } else {
+            await loadXLSXLib();
+            var wb = XLSX.read(new Uint8Array(fr.result), { type: 'array', cellDates: true });
+            var ws = wb.Sheets[wb.SheetNames[0]];
+            var grid = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false });
+            resolve(grid.map(function (r) {
+              return r.map(function (v) { return v instanceof Date ? normDateVal(v.toISOString()) : v; });
+            }));
+          }
+        } catch (e) { reject(e); }
+      };
+      if ((file.name || '').toLowerCase().endsWith('.csv') || (file.name || '').toLowerCase().endsWith('.txt')) {
+        fr.readAsText(file, 'utf-8');
+      } else {
+        fr.readAsArrayBuffer(file);
+      }
+    });
+  }
+  function impTemplate() {
+    var csv = DB.toCSV(
+      ['编号', '名称', '分类', '规格型号', '单位', '库存数量', '安全库存', '存放位置', '供应商', '单价', '批号', '有效期至', '备注'],
+      [['A001', '杜邦线 20cm', '电子元件', '公对公 40P', '束', 20, 5, 'C 区仪器间', '某宝电子', 3.5, '', '', '示例行，可删除']]);
+    DB.download('物料导入模板.csv', '\uFEFF' + csv, 'text/csv');
+    toast('模板已下载，用 Excel 填好后另存为 CSV 或直接上传 xlsx', 'ok');
+  }
+  function importTableModal() {
+    if (!DB.isAdmin()) return toast('仅管理员可导入', 'err');
+    IMP = { rows: [], mode: 'update', headers: [] };
+    var body =
+      '<div class="modal-note">支持 <b>.xlsx / .xls / .csv</b>。首行需为表头，系统会自动识别列：编号、名称、分类、规格、单位、库存数量、安全库存、存放位置、供应商、单价、批号、有效期至、备注。</div>' +
+      '<label class="field"><span>选择表格文件</span><input type="file" id="impFile" accept=".csv,.xlsx,.xls,.txt"></label>' +
+      '<div class="auth-label">导入方式</div>' +
+      '<div class="role-pick" id="impMode">' +
+        '<button type="button" class="role-opt on" data-mode="update"><b>按编号覆盖更新</b><span>编号相同则更新信息与库存，没有则新增</span></button>' +
+        '<button type="button" class="role-opt" data-mode="append"><b>全部作为新增</b><span>忽略已有编号，全部新建物料</span></button>' +
+      '</div>' +
+      '<div id="impPreview" style="margin-top:12px;"></div>' +
+      '<div style="margin-top:10px;"><button type="button" class="mini-btn" id="impTpl">下载 CSV 模板</button></div>';
+    openModal('导入表格数据', body, [
+      { text: '取消', cls: 'btn-ghost', onClick: closeModal },
+      { text: '开始导入', cls: 'btn-primary', onClick: doTableImport }
+    ]);
+    $('impMode').addEventListener('click', function (e) {
+      var b = e.target.closest('.role-opt'); if (!b) return;
+      document.querySelectorAll('#impMode .role-opt').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on'); IMP.mode = b.getAttribute('data-mode');
+    });
+    $('impTpl').addEventListener('click', impTemplate);
+    $('impFile').addEventListener('change', async function (e) {
+      var f = e.target.files[0]; if (!f) return;
+      var box = $('impPreview');
+      box.innerHTML = '<div class="cell-sub">正在解析文件…</div>';
+      try {
+        var grid = await parseTableFile(f);
+        if (!grid || grid.length < 2) throw new Error('表格为空或缺少数据行（首行需为表头）');
+        var map = mapHeaders(grid[0]);
+        if (map.name === undefined && map.code === undefined) throw new Error('未识别到「名称」或「编号」列，请检查表头');
+        IMP.headers = grid[0];
+        IMP.rows = grid.slice(1).map(function (r) { return mapRow(r, map); })
+          .filter(function (r) { return r.name || r.code; });
+        if (!IMP.rows.length) throw new Error('没有可导入的数据行');
+        var miss = IMP_FIELDS.map(function (x) { return x[0]; }).filter(function (k) { return map[k] === undefined && k !== 'remark'; });
+        box.innerHTML =
+          '<div class="modal-note">已识别 <b>' + IMP.rows.length + '</b> 条数据' +
+          (miss.length ? '（未识别列：' + miss.join('、') + '，将留空）' : '') + '，预览前 5 条：</div>' +
+          '<div class="table-wrap"><table class="table"><thead><tr><th>编号</th><th>名称</th><th>分类</th><th>库存</th><th>单位</th></tr></thead><tbody>' +
+          IMP.rows.slice(0, 5).map(function (r) {
+            return '<tr><td>' + esc(r.code || '—') + '</td><td>' + esc(r.name || '—') + '</td><td>' + esc(r.category || '—') + '</td><td class="right">' + r.quantity + '</td><td>' + esc(r.unit) + '</td></tr>';
+          }).join('') + '</tbody></table></div>';
+      } catch (err) {
+        IMP.rows = [];
+        box.innerHTML = '<div class="auth-err">解析失败：' + esc(err.message || err) + '<br>Excel 解析依赖在线组件，若反复失败请把表格另存为 CSV 再导入。</div>';
+      }
+    });
+  }
+  function doTableImport() {
+    if (!IMP.rows.length) return toast('请先选择并解析表格文件', 'err');
+    var mode = IMP.mode, total = IMP.rows.length;
+    var me = DB.currentUser();
+    var op = (me && me.name) || DB.settings.operator || '管理员';
+    confirmModal('确认导入', '将按「' + (mode === 'update' ? '按编号覆盖更新' : '全部作为新增') + '」方式导入 <b>' + total + '</b> 条数据，导入后可在流水日志中追溯。', '确认导入', function () {
+      var add = 0, upd = 0, skip = 0;
+      IMP.rows.forEach(function (r) {
+        var exist = null;
+        if (r.code) {
+          var key = r.code.toLowerCase();
+          S().items.forEach(function (it) { if (!exist && String(it.code).toLowerCase() === key) exist = it; });
+        }
+        if (exist && mode === 'update') { DB.updateItem(exist.id, r, op); upd++; }
+        else if (exist) { skip++; }
+        else { DB.addItem(r, op); add++; }
+      });
+      closeModal(); fillDicts(); render();
+      toast('导入完成：新增 ' + add + ' 条，更新 ' + upd + ' 条' + (skip ? '，跳过 ' + skip + ' 条' : ''), 'ok');
+    });
+  }
+
   /* ================= 事件绑定 ================= */
   function bind() {
     $('nav').addEventListener('click', function (e) {
@@ -12288,6 +12550,7 @@ var DB = (function () {
       renderItems();
     });
     $('btnExportItems').addEventListener('click', exportItems);
+    $('btnImportTable').addEventListener('click', importTableModal);
 
     $('fLoanStatus').addEventListener('change', function (e) { UI.loanFilter.status = e.target.value; renderLoans(); });
     $('fBorrower').addEventListener('change', function (e) { UI.loanFilter.borrower = e.target.value; renderLoans(); });
@@ -12429,7 +12692,10 @@ var DB = (function () {
     });
     $('btnClear').addEventListener('click', function () {
       confirmModal('清空所有数据', '将删除全部物料、借阅记录与操作流水，<b>无法恢复</b>。建议先导出 JSON 备份。', '确认清空', function () {
-        DB.clearAll(); refreshChrome(); fillDicts(); render(); toast('数据已清空', 'ok');
+        DB.clearAll();
+        DB.settings.clearedRev = (DB.num(DB.settings.clearedRev, 0) || 0) + 1; // 让其他设备也同步清空
+        DB.save();
+        refreshChrome(); fillDicts(); render(); toast('数据已清空', 'ok');
       });
     });
 
@@ -12635,6 +12901,7 @@ var DB = (function () {
     var isAdmin = !!u && u.role === 'admin';
     $('btnQuickAdd').style.display = isAdmin ? '' : 'none';
     $('btnAddItem').style.display = isAdmin ? '' : 'none';
+    $('btnImportTable').style.display = isAdmin ? '' : 'none';
     var navSettings = document.querySelector('.nav-item[data-view="settings"]');
     if (navSettings) navSettings.style.display = isAdmin ? '' : 'none';
     if (!isAdmin && UI.view === 'settings') switchView('dashboard');
@@ -12814,23 +13081,12 @@ var DB = (function () {
 
   /* ================= 启动 ================= */
   async function init() {
-    var isFirst = !localStorage.getItem(DB.KEY);
     DB.load();
     // 若已配置云端同步，先拉取最新共享数据，避免把本机示例数据推上去覆盖云端
     if (DB.syncEnabled()) {
       try { await DB.syncPull(); } catch (e) { console.warn('启动同步失败', e); }
     }
-    // 同步后若仍没有任何数据，才载入示例数据；若云端已存在账号/记录则保留
-    var hasData = DB.state.items.length || DB.state.loans.length || DB.state.logs.length || DB.state.users.length;
-    if (!hasData) {
-      var d = window.SEED.build();
-      DB.state.settings = DB.settings;
-      DB.state.items = d.items;
-      DB.state.loans = d.loans;
-      DB.state.logs = d.logs;
-      DB.save();
-      setTimeout(function () { toast('已为你载入一套示例数据，可在「系统设置」中清空', 'ok'); }, 500);
-    }
+    // 不再自动载入示例数据：系统保持干净，需要演示可在「系统设置 → 载入示例数据」手动载入
     refreshChrome();
     fillDicts();
     bind();
