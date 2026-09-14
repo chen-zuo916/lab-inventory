@@ -10394,6 +10394,38 @@ body.assistant-open{overflow:hidden;}
   .btn{min-height:40px;}
 }
 
+/* ============ 手机端侧栏：彻底收起，永不留窄条 ============ */
+@media (max-width:768px){
+  /* 无论处于何种折叠状态，侧栏宽度保持完整、文字完整显示 */
+  .app-sidebar.sidebar-collapsed,
+  html.sidebar-collapsed-state .app-sidebar{
+    width:var(--sidebar-w) !important; flex:0 0 var(--sidebar-w) !important;
+  }
+  .app-sidebar.sidebar-collapsed .logo-stack,
+  .app-sidebar.sidebar-collapsed .nav-text,
+  .app-sidebar.sidebar-collapsed .nav-badge,
+  .app-sidebar.sidebar-collapsed .nav-section-label,
+  .app-sidebar.sidebar-collapsed .sidebar-collapse-btn{display:revert !important;}
+  .app-sidebar.sidebar-collapsed .nav-item{justify-content:flex-start !important;padding:10px 13px !important;}
+  /* 收起时整体滑出屏幕外，一点不露 */
+  .app > .app-sidebar:not(.sidebar-open){transform:translateX(-110%) !important;visibility:hidden;}
+  .app > .app-sidebar.sidebar-open{transform:translateX(0) !important;visibility:visible;}
+}
+
+/* ============ 禁止选中文字（输入框除外） ============ */
+*{
+  -webkit-user-select:none !important;
+  -moz-user-select:none !important;
+  -ms-user-select:none !important;
+  user-select:none !important;
+  -webkit-touch-callout:none;
+}
+input,textarea{
+  -webkit-user-select:text !important;
+  user-select:text !important;
+  -webkit-touch-callout:default;
+}
+
 </style>
 </head>
 <body>
@@ -11651,7 +11683,7 @@ var DB = (function () {
   var S = function () { return DB.state; };
 
   // 当前部署版本号（每次重新部署时修改这里，用于自动检测更新）
-  var APP_VER = '20260914_1330';
+  var APP_VER = '20260914_1350';
 
   var UI = {
     view: 'dashboard',
@@ -13143,7 +13175,10 @@ var DB = (function () {
 </script>
 <script>
 /* === 侧栏折叠（桌面） === */
+function isMobile() { return window.innerWidth <= 768; }
 function toggleSidebarCollapse() {
+  // 手机上「收缩」就是彻底收起抽屉，不进入迷你模式
+  if (isMobile()) { closeSidebar(); return; }
   var sb = document.getElementById('sidebar');
   if (!sb) return;
   sb.classList.toggle('sidebar-collapsed');
@@ -13155,7 +13190,8 @@ function toggleSidebarCollapse() {
 function toggleSidebar() {
   var sb = document.getElementById('sidebar');
   var ov = document.getElementById('sidebarOverlay');
-  if (sb) sb.classList.toggle('sidebar-open');
+  if (sb) { sb.classList.toggle('sidebar-open'); sb.classList.remove('sidebar-collapsed'); }
+  document.documentElement.classList.remove('sidebar-collapsed-state');
   if (ov) ov.classList.toggle('sidebar-overlay-visible');
 }
 function closeSidebar() {
