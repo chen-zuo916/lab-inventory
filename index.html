@@ -11714,7 +11714,7 @@ var DB = (function () {
   var S = function () { return DB.state; };
 
   // 当前部署版本号（每次重新部署时修改这里，用于自动检测更新）
-  var APP_VER = '20260914_1600';
+  var APP_VER = '20260914_1620';
 
   var UI = {
     view: 'dashboard',
@@ -12660,6 +12660,7 @@ var DB = (function () {
       else if (act === 'editItem') itemForm(DB.getItem(id));
       else if (act === 'delItem') {
         var it = DB.getItem(id);
+        if (!it) { toast('该物料已被删除或尚未同步，请刷新后重试', 'err'); return; }
         confirmModal('删除物料', '确认删除 <b>' + esc(it.name) + '</b>（' + esc(it.code) + '）？<br>该物料的档案与库存将被移除，操作会记录到流水。', '确认删除', function () {
           var r = DB.deleteItem(id, DB.settings.operator);
           if (r !== true) { toast(r, 'err'); return false; }
@@ -12675,7 +12676,8 @@ var DB = (function () {
       else if (act === 'extendLoan') extendForm(id);
       else if (act === 'delLoan') {
         var loan = null; S().loans.forEach(function (l) { if (l.id === id) loan = l; });
-        var remain = loan ? loan.quantity - loan.returnedQty : 0;
+        if (!loan) { toast('该借用记录已被删除或尚未同步，请刷新后重试', 'err'); return; }
+        var remain = loan.quantity - loan.returnedQty;
         confirmModal('删除借用记录',
           '确认删除借用单 <b>' + esc(loan.no) + '</b>？' +
           (remain > 0 ? '<br><span class="danger">未还的 ' + remain + loan.unit + ' 将自动回补到库存。</span>' : ''),
