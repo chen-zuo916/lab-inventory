@@ -10344,6 +10344,35 @@ body.assistant-open{overflow:hidden;}
 .assistant-float .assistant-body{gap:8px;padding:10px 14px 12px;}
 .assistant-float .assistant-foot{padding:8px 14px;font-size:11px;}
 
+/* ============ 布局兜底：修复多套CSS混合导致的移动端错位 ============ */
+.app{display:flex;min-height:100vh;}
+.app > .app-sidebar{
+  position:fixed !important;top:0;left:0;bottom:0;width:var(--sidebar-w);z-index:100;
+  transform:translateX(0);transition:transform .25s ease;
+}
+.app > .main{
+  flex:1;min-width:0;margin-left:var(--sidebar-w);display:flex;flex-direction:column;min-height:100vh;
+}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(8,15,30,.45);z-index:99;}
+.sidebar-overlay.sidebar-overlay-visible{display:block !important;}
+
+@media (max-width:768px){
+  .app > .app-sidebar{transform:translateX(-100%) !important;}
+  .app > .app-sidebar.sidebar-open{transform:translateX(0) !important;}
+  .app > .main{margin-left:0 !important;}
+  .topbar-hamburger{display:inline-flex !important;}
+  .topbar-left{width:100%;}
+  .topbar-right{flex-wrap:wrap;gap:8px;}
+  .search-input{flex:1;min-width:0;width:auto !important;}
+  .content{padding:12px 14px 24px;}
+  .stat-grid{grid-template-columns:1fr !important;}
+}
+
+/* 侧边栏 logo 用机器人 emoji，保持与登录页一致 */
+.app-sidebar-logo .logo-icon{
+  font-size:18px;background:linear-gradient(135deg,#ec4899,#06b6d4);
+}
+
 </style>
 </head>
 <body>
@@ -10354,7 +10383,7 @@ body.assistant-open{overflow:hidden;}
   <!-- 侧边导航 -->
   <aside class="app-sidebar" id="sidebar">
     <div class="app-sidebar-logo">
-      <div class="logo-icon">LB</div>
+      <div class="logo-icon">🤖</div>
       <div class="logo-stack">
         <span class="logo-text" id="brandName">智能机器人社团</span>
         <span class="logo-subtext">库存 · 借阅 · 溯源</span>
@@ -10753,7 +10782,7 @@ body.assistant-open{overflow:hidden;}
       <div class="robot-head mini"><div class="robot-eyes"><span></span><span></span></div></div>
       智能助手
     </div>
-    <button class="icon-btn assistant-close" onclick="closeAssistant(event)">✕</button>
+    <button class="icon-btn assistant-close" id="assistantCloseBtn">✕</button>
   </div>
   <div class="assistant-body" id="assistantBody"></div>
   <div class="assistant-foot">
@@ -12953,6 +12982,19 @@ var DB = (function () {
     window.addEventListener('mouseup', function () { if (dragging) { dragging = false; d.classList.remove('dragging'); } });
   }
 
+  function bindAssistantClose() {
+    var btn = $('assistantCloseBtn');
+    if (!btn || btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      closeAssistant();
+    });
+    btn.addEventListener('touchstart', function (e) {
+      e.stopPropagation();
+    }, { passive: true });
+  }
+
   /* ================= 启动 ================= */
   async function init() {
     var isFirst = !localStorage.getItem(DB.KEY);
@@ -12977,6 +13019,7 @@ var DB = (function () {
     bind();
     bindAssistantDrag();
     bindBubbleDrag();
+    bindAssistantClose();
     if (typeof updateSyncUI === 'function') updateSyncUI();
     if (DB.currentUser()) {
       applyAuth();
