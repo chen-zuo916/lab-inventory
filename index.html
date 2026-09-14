@@ -10426,6 +10426,23 @@ input,textarea{
   -webkit-touch-callout:default;
 }
 
+/* ============ 手机端顶栏：去遮挡，高度自适应，整齐堆叠 ============ */
+@media (max-width:768px){
+  .app-topbar{
+    position:sticky; top:0 !important; margin:0 !important;
+    height:auto !important; min-height:52px;
+    padding:8px 12px !important; gap:8px;
+    border-radius:0 !important; border-left:none !important; border-right:none !important;
+    background:#fff !important; flex-wrap:wrap; align-items:center;
+  }
+  .topbar-hamburger{display:inline-flex !important; order:0; flex:0 0 auto;}
+  .topbar-right{order:1; margin-left:auto; width:auto; max-width:100%; flex-wrap:wrap; gap:6px;}
+  .topbar-left{order:2; width:100%;}
+  /* 顶栏恢复文档流内高度，内容不再被压住 */
+  .app > .main{padding-top:0;}
+  .content{padding-top:12px;}
+}
+
 </style>
 </head>
 <body>
@@ -11683,7 +11700,7 @@ var DB = (function () {
   var S = function () { return DB.state; };
 
   // 当前部署版本号（每次重新部署时修改这里，用于自动检测更新）
-  var APP_VER = '20260914_1350';
+  var APP_VER = '20260914_1400';
 
   var UI = {
     view: 'dashboard',
@@ -13123,14 +13140,8 @@ var DB = (function () {
     fillDicts();
     bind();
     if (typeof updateSyncUI === 'function') updateSyncUI();
-    // 入口控制：链接带 ?login=1 时，无论是否已登录都先展示登录/注册界面
-    var forceLogin = /[?&]login=1\b/.test(location.search);
-    if (DB.currentUser() && !forceLogin) {
-      applyAuth();
-      switchView('dashboard');
-    } else {
-      showAuth();
-    }
+    // 入口控制：无论是否已登录，每次打开都先进入登录/注册界面，登录后才进入实验室界面
+    showAuth();
     startAutoSync(12000);
     // 打开后稍等再自检版本，避免干扰首屏渲染
     setTimeout(checkForUpdate, 1500);
@@ -13161,10 +13172,13 @@ var DB = (function () {
   // 全局错误兜底：任何未捕获异常都在页面上可见，避免"白屏无提示"
   window.addEventListener('error', function (ev) {
     try {
+      var msg = ev.message || (ev.error && ev.error.message) || String(ev.error || '');
+      // 跨域脚本报出来只有 "Script error."，无任何可定位信息，静默忽略避免误导
+      if (!msg || /^Script error/i.test(msg)) return;
       var root = document.getElementById('toastRoot') || document.body;
       var d = document.createElement('div');
       d.style.cssText = 'position:fixed;left:12px;bottom:12px;max-width:90vw;z-index:999;background:#b91c1c;color:#fff;padding:10px 14px;border-radius:10px;font:13px/1.5 system-ui;box-shadow:0 8px 24px rgba(0,0,0,.3)';
-      d.textContent = '页面脚本错误：' + (ev.message || (ev.error && ev.error.message) || ev.error) + '（请截图反馈）';
+      d.textContent = '页面脚本错误：' + msg + '（请截图反馈）';
       root.appendChild(d);
     } catch (e) {}
   });
