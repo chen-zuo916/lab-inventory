@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <!-- 自包含单文件版：CSS 与 JS 已内联，可直接双击打开或部署 -->
-<title>智能机器人社团 · 器材与借用管理</title>
+<title>机器人社团物料库 · 库存与借用管理</title>
 <script>window.__LAB_SYNC={"url":"https://yfyhpinyxhbbuustjdvk.supabase.co","key":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlmeWhwaW55eGhiYnV1c3RqZHZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTE4NDksImV4cCI6MjEwNDUyNzg0OX0.ZNj4BD7XnxJIHETejtZcMT9Nfm9UpZbjs4DkcYmJeGo"}</script>
 <style>
 /* ============ 基础变量 ============ */
@@ -10281,10 +10281,12 @@ body.assistant-open{overflow:hidden;}
   display:flex; align-items:center; gap:8px; font-weight:700; font-size:14px; color:#be185d;
 }
 .assistant-float-head .icon-btn{
-  width:40px; height:40px; border-radius:50%; border:none; background:transparent;
+  width:48px; height:48px; border-radius:50%; border:none; background:transparent;
   color:#64748b; font-size:18px; cursor:pointer; display:flex; align-items:center; justify-content:center;
   -webkit-tap-highlight-color:transparent; tap-highlight-color:transparent;
   position:relative; z-index:10;
+  box-sizing:border-box; padding:12px; pointer-events:auto;
+  text-decoration:none; line-height:1;
 }
 .assistant-float-head .icon-btn:hover{ background:#fce7f3; color:#be185d; }
 .assistant-float-head .icon-btn:active{ transform:scale(.92); }
@@ -10388,7 +10390,7 @@ body.assistant-open{overflow:hidden;}
     <div class="app-sidebar-logo">
       <div class="logo-icon">🤖</div>
       <div class="logo-stack">
-        <span class="logo-text" id="brandName">智能机器人社团</span>
+        <span class="logo-text" id="brandName">机器人社团物料库</span>
         <span class="logo-subtext">库存 · 借阅 · 溯源</span>
       </div>
       <button class="sidebar-collapse-btn" onclick="toggleSidebarCollapse()" title="收起侧栏">
@@ -10679,7 +10681,7 @@ body.assistant-open{overflow:hidden;}
           <div class="panel">
             <div class="panel-head"><h3>社团信息</h3></div>
             <div class="panel-body form-grid">
-              <label class="field"><span>社团名称</span><input id="setLabName" type="text" placeholder="如：智能机器人社团"></label>
+              <label class="field"><span>社团名称</span><input id="setLabName" type="text" placeholder="如：机器人社团物料库"></label>
               <label class="field"><span>默认操作员</span><input id="setAdmin" type="text" placeholder="用于流水记录署名"></label>
               <label class="field"><span>默认借期（天）</span><input id="setDays" type="number" min="1" max="365" value="14"></label>
               <label class="field"><span>低库存提前预警（天）</span><input id="setExpireDays" type="number" min="1" max="365" value="30"></label>
@@ -10785,7 +10787,7 @@ body.assistant-open{overflow:hidden;}
       <div class="robot-head mini"><div class="robot-eyes"><span></span><span></span></div></div>
       智能助手
     </div>
-    <button class="icon-btn assistant-close" id="assistantCloseBtn" onclick="closeAssistant(event)" aria-label="关闭" type="button">✕</button>
+    <a class="icon-btn assistant-close" id="assistantCloseBtn" href="javascript:;" onclick="closeAssistant(event);return false;" role="button" aria-label="关闭">✕</a>
   </div>
   <div class="assistant-body" id="assistantBody"></div>
   <div class="assistant-foot">
@@ -10799,7 +10801,7 @@ body.assistant-open{overflow:hidden;}
     <div class="auth-brand">
       <div class="brand-logo">🤖</div>
       <div class="auth-brand-text">
-        <strong id="authLabName">智能机器人社团</strong>
+        <strong id="authLabName">机器人社团物料库</strong>
         <span>器材 · 借用 · 管理</span>
       </div>
     </div>
@@ -10978,7 +10980,7 @@ var DB = (function () {
   var KEY = 'lab_inventory_v1';
 
   var DEFAULT_SETTINGS = {
-    labName: '智能机器人社团',
+    labName: '机器人社团物料库',
     operator: '管理员',
     borrowDays: 14,
     expireWarnDays: 30,
@@ -11493,7 +11495,7 @@ var DB = (function () {
     setTimeout(function () { document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
   }
   function exportBackup() {
-    download('实验室物料备份_' + dateStr() + '.json', JSON.stringify(state, null, 2), 'application/json');
+    download('机器人社团物料备份_' + dateStr() + '.json', JSON.stringify(state, null, 2), 'application/json');
   }
 
   return {
@@ -11520,7 +11522,7 @@ var DB = (function () {
 </script>
 <script>
 /* =========================================================
- * 示例数据：典型高校实验室的物料与借阅场景
+ * 示例数据：典型高校机器人社团的物料与借阅场景
  * 首页 → 系统设置 → 载入示例数据 可一键生成
  * ========================================================= */
 (function () {
@@ -11573,7 +11575,7 @@ var DB = (function () {
     // id, 单号, 物料id, 数量, 已还, 借用人, 联系方式, 用途, 借出, 应还, 归还时间
     ['ln01', 'B0001', 'it14', 1, 0, '张明远', '138****2041', '细胞房日常移液', ago(21, 9, 20), later(-6), ''],
     ['ln02', 'B0002', 'it15', 1, 0, '李思琪', '159****7788', '样品前处理加热搅拌', ago(4, 14, 30), later(3), ''],
-    ['ln03', 'B0003', 'it01', 50, 30, '王浩宇', '实验室座机 612', '毕业设计批量离心', ago(12, 15, 10), later(2), ''],
+    ['ln03', 'B0003', 'it01', 50, 30, '王浩宇', '社团座机 612', '毕业设计批量离心', ago(12, 15, 10), later(2), ''],
     ['ln04', 'B0004', 'it17', 1, 1, '赵一诺', '186****3302', '电路调试', ago(9, 10, 5), later(-2), ago(6, 16, 40)],
     ['ln05', 'B0005', 'it11', 20, 20, '陈可', '137****8899', '平板涂布实验', ago(30, 9, 0), later(-16), ago(24, 17, 20)]
   ];
@@ -11720,9 +11722,9 @@ var DB = (function () {
     items: ['物料管理', '物料档案、库存数量与存放位置'],
     loans: ['借阅管理', '借出、归还、续借与逾期跟踪'],
     logs: ['操作流水', '所有库存变动与借还记录，可追溯'],
-    members: ['成员管理', '实验室成员名册与权限管理'],
+    members: ['成员管理', '机器人社团成员名册与权限管理'],
     profile: ['个人中心', '查看与完善个人信息、修改密码'],
-    settings: ['系统设置', '实验室信息、字典维护与数据备份']
+    settings: ['系统设置', '机器人社团信息、字典维护与数据备份']
   };
   function switchView(v) {
     UI.view = v;
@@ -11997,7 +11999,7 @@ var DB = (function () {
   }
   function refreshChrome() {
     var st = DB.settings;
-    $('brandName').textContent = st.labName || '智能机器人社团';
+    $('brandName').textContent = st.labName || '机器人社团物料库';
     var u = DB.currentUser();
     if (u) {
       $('whoName').textContent = u.name;
@@ -12008,7 +12010,7 @@ var DB = (function () {
       $('whoRole').textContent = '请先登录';
       $('whoAvatar').textContent = '未';
     }
-    document.title = (st.labName || '智能机器人社团') + ' · 器材与借用管理';
+    document.title = (st.labName || '机器人社团物料库') + ' · 库存与借用管理';
   }
   function updateSyncUI() {
     var on = DB.syncEnabled();
@@ -12404,7 +12406,7 @@ var DB = (function () {
     // 设置
     $('btnSaveSettings').addEventListener('click', function () {
       var st = DB.settings;
-      st.labName = val('setLabName') || '智能机器人社团';
+      st.labName = val('setLabName') || '机器人社团物料库';
       st.operator = val('setAdmin') || '管理员';
       st.borrowDays = Math.max(1, DB.num(val('setDays'), 14));
       st.expireWarnDays = Math.max(1, DB.num(val('setExpireDays'), 30));
@@ -12440,7 +12442,7 @@ var DB = (function () {
       e.target.value = '';
     });
     $('btnSeed').addEventListener('click', function () {
-      confirmModal('载入示例数据', '将清空当前数据并载入一套实验室示例物料与借阅记录，便于体验完整功能。', '确认载入', function () {
+      confirmModal('载入示例数据', '将清空当前数据并载入一套机器人社团示例物料与借阅记录，便于体验完整功能。', '确认载入', function () {
         var d = window.SEED.build();
         DB.replace({ settings: DB.settings, items: d.items, loans: d.loans, logs: d.logs });
         fillDicts(); render(); toast('示例数据已载入', 'ok');
@@ -12566,7 +12568,7 @@ var DB = (function () {
   }
   function renderAuthForm() {
     var st = DB.settings;
-    $('authLabName').textContent = st.labName || '智能机器人社团';
+    $('authLabName').textContent = st.labName || '机器人社团物料库';
     var html;
     if (authMode === 'login') {
       html =
@@ -13001,6 +13003,25 @@ var DB = (function () {
     // 兜底：内联 onclick 可能因缓存未生效，确保全局函数存在
     window.closeAssistant = closeAssistant;
   }
+  // 事件委托兜底：即使按钮本身事件失效，点击抽屉内关闭按钮也能关
+  function bindAssistantDrawerEvents() {
+    var d = $('assistantDrawer');
+    if (!d || d.dataset.eventsBound) return;
+    d.dataset.eventsBound = '1';
+    d.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('#assistantCloseBtn, .assistant-close')) {
+        if (e.stopPropagation) e.stopPropagation();
+        closeAssistant();
+      }
+    });
+    d.addEventListener('touchend', function (e) {
+      if (e.target.closest && e.target.closest('#assistantCloseBtn, .assistant-close')) {
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+        closeAssistant();
+      }
+    }, { passive: false });
+  }
 
   /* ================= 启动 ================= */
   async function init() {
@@ -13027,6 +13048,7 @@ var DB = (function () {
     bindAssistantDrag();
     bindBubbleDrag();
     bindAssistantClose();
+    bindAssistantDrawerEvents();
     if (typeof updateSyncUI === 'function') updateSyncUI();
     if (DB.currentUser()) {
       applyAuth();
