@@ -11250,6 +11250,20 @@ var DB = (function () {
     return u;
   }
   function logout() { state.session = ''; save(); }
+  /** 自助找回密码：学号 + 姓名 + 手机号（均与注册一致）才能重置，防止他人冒改 */
+  function resetPasswordSelf(data) {
+    var sid = String(data.sid || '').trim();
+    var u = findUser(sid);
+    if (!u) return '账号不存在';
+    if (String(data.name || '').trim() !== u.name) return '姓名与该账号不匹配';
+    if (!u.phone) return '该账号未登记手机号，无法自助找回，请联系管理员重置';
+    if (String(data.phone || '').trim() !== u.phone) return '手机号与该账号不匹配';
+    if (String(data.password || '').length < 6) return '密码至少 6 位';
+    if (String(data.password) !== String(data.confirm || '')) return '两次输入的密码不一致';
+    u.pass = hashPass(data.password, u.sid);
+    save();
+    return true;
+  }
   function currentUser() {
     if (!state.session) return null;
     return getUser(state.session);
@@ -11568,7 +11582,7 @@ var DB = (function () {
     createLoan: createLoan, returnLoan: returnLoan, extendLoan: extendLoan,
     deleteLoan: deleteLoan, loanStatus: loanStatus, itemStatus: itemStatus,
     stats: stats, toCSV: toCSV, download: download, exportBackup: exportBackup,
-    hashPass: hashPass, findUser: findUser, getUser: getUser,
+    hashPass: hashPass, findUser: findUser, getUser: getUser, resetPasswordSelf: resetPasswordSelf,
     registerUser: registerUser, login: login, logout: logout,
     currentUser: currentUser, isAdmin: isAdmin, userCount: userCount,
     setRole: setRole, resetPass: resetPass, deleteUser: deleteUser,
@@ -11700,7 +11714,7 @@ var DB = (function () {
   var S = function () { return DB.state; };
 
   // 当前部署版本号（每次重新部署时修改这里，用于自动检测更新）
-  var APP_VER = '20260914_1400';
+  var APP_VER = '20260914_1520';
 
   var UI = {
     view: 'dashboard',
@@ -12320,8 +12334,13 @@ var DB = (function () {
     ]);
   }
 
-  /* ================= 导出 ================= */
-  function exportItems() {
+  /* ================= 导出（导出前先拉取云端最新数据，保证是全员最新状态） ================= */
+  async function syncLatest() {
+    if (!DB.syncEnabled()) return;
+    try { await DB.syncPull(); } catch (e) { console.warn('导出前同步失败', e); }
+  }
+  async function exportItems() {
+    await syncLatest();
     var list = filteredItems();
     var rows = list.map(function (it) {
       var st = { low: '低库存', out: '已耗尽', expire: '近效期', normal: '充足' }[DB.itemStatus(it)];
@@ -12333,7 +12352,8 @@ var DB = (function () {
       'text/csv');
     toast('已导出 ' + rows.length + ' 条物料', 'ok');
   }
-  function exportLoans() {
+  async function exportLoans() {
+    await syncLatest();
     var rows = S().loans.map(function (l) {
       var s = { borrowing: '借用中', partial: '部分归还', overdue: '已逾期', returned: '已归还' }[DB.loanStatus(l)];
       return [l.no, l.itemCode, l.itemName, l.quantity, l.returnedQty, l.quantity - l.returnedQty, l.unit,
@@ -12344,7 +12364,8 @@ var DB = (function () {
       'text/csv');
     toast('已导出 ' + rows.length + ' 条借阅记录', 'ok');
   }
-  function exportLogs() {
+  async function exportLogs() {
+    await syncLatest();
     var rows = S().logs.map(function (l) {
       return [l.at, l.type, l.itemName, l.delta, l.after, l.operator, l.remark];
     });
@@ -12713,7 +12734,10 @@ var DB = (function () {
       DB.save(); fillDicts();
       toast('字典已更新', 'ok');
     });
-    $('btnExportAll').addEventListener('click', function () { DB.exportBackup(); toast('备份已导出', 'ok'); });
+    $('btnExportAll').addEventListener('click', async function () {
+      await syncLatest();
+      DB.exportBackup(); toast('已导出全员最新数据备份', 'ok');
+    });
     $('btnImportAll').addEventListener('click', function () { $('fileImport').click(); });
     $('fileImport').addEventListener('change', function (e) {
       var f = e.target.files[0]; if (!f) return;
@@ -12869,6 +12893,7 @@ var DB = (function () {
           '<label class="field"><span>密码 *</span><input id="aPass" type="password" placeholder="请输入密码"></label>' +
           '<div id="authErr" class="auth-err"></div>' +
           '<button type="submit" class="btn btn-primary auth-btn">登录</button>' +
+          '<div style="margin-top:10px;text-align:right;"><a href="javascript:;" id="authForgot" style="color:#ec4899;font-size:12.5px;">忘记密码？</a></div>' +
         '</form>';
     } else {
       var firstUser = DB.userCount() === 0;
@@ -12894,9 +12919,46 @@ var DB = (function () {
     $('authBody').innerHTML = html;
     bindAuthForm();
   }
+  /** 忘记密码：学号 + 姓名 + 手机号（与注册一致）自助重置 */
+  function renderForgotForm() {
+    $('authLabName').textContent = DB.settings.labName || '机器人社团物料库';
+    $('authBody').innerHTML =
+      '<form class="auth-form" id="authForm" autocomplete="off">' +
+        inp('fpSid', '学号 / 工号 *', '', 'text', 'placeholder="注册时的账号"') +
+        inp('fpName', '姓名 *', '', 'text', 'placeholder="注册时的姓名"') +
+        inp('fpPhone', '手机号 *', '', 'text', 'placeholder="注册时登记的手机号"') +
+        '<label class="field"><span>新密码 *（至少 6 位）</span><input id="fpPass" type="password" placeholder="设置新密码"></label>' +
+        '<label class="field"><span>确认新密码 *</span><input id="fpPass2" type="password" placeholder="再次输入新密码"></label>' +
+        '<div id="authErr" class="auth-err"></div>' +
+        '<button type="submit" class="btn btn-primary auth-btn">重置密码</button>' +
+        '<div style="margin-top:10px;text-align:right;"><a href="javascript:;" id="fpBack" style="color:#ec4899;font-size:12.5px;">返回登录</a></div>' +
+      '</form>' +
+      '<div style="margin-top:8px;font-size:11.5px;color:#94a3b8;text-align:center;">信息需与注册时完全一致；未登记手机号的账号请联系管理员在「成员管理」重置</div>';
+    bindForgotForm();
+  }
+  function bindForgotForm() {
+    var form = $('authForm');
+    if (!form) return;
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var err = $('authErr'); err.textContent = '';
+      var r = DB.resetPasswordSelf({
+        sid: $('fpSid').value, name: $('fpName').value, phone: $('fpPhone').value,
+        password: $('fpPass').value, confirm: $('fpPass2').value
+      });
+      if (typeof r === 'string') { err.textContent = r; return; }
+      toast('密码已重置，请用新密码登录', 'ok');
+      authMode = 'login';
+      document.querySelectorAll('.auth-tab').forEach(function (x) { x.classList.toggle('active', x.getAttribute('data-auth') === 'login'); });
+      renderAuthForm();
+    });
+    $('fpBack').addEventListener('click', function (e) { e.preventDefault(); renderAuthForm(); });
+  }
   function bindAuthForm() {
     var form = $('authForm');
     if (!form) return;
+    var fg = $('authForgot');
+    if (fg) fg.addEventListener('click', function (e) { e.preventDefault(); renderForgotForm(); });
     var rp = $('rolePick');
     if (rp) {
       rp.addEventListener('click', function (e) {
