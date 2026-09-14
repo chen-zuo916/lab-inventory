@@ -11619,7 +11619,7 @@ var DB = (function () {
   var S = function () { return DB.state; };
 
   // 当前部署版本号（每次重新部署时修改这里，用于自动检测更新）
-  var APP_VER = '20260914_1230';
+  var APP_VER = '20260914_1300';
 
   var UI = {
     view: 'dashboard',
@@ -12835,7 +12835,9 @@ var DB = (function () {
     fillDicts();
     bind();
     if (typeof updateSyncUI === 'function') updateSyncUI();
-    if (DB.currentUser()) {
+    // 入口控制：链接带 ?login=1 时，无论是否已登录都先展示登录/注册界面
+    var forceLogin = /[?&]login=1\b/.test(location.search);
+    if (DB.currentUser() && !forceLogin) {
       applyAuth();
       switchView('dashboard');
     } else {
