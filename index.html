@@ -11727,7 +11727,7 @@ var DB = (function () {
   var S = function () { return DB.state; };
 
   // 当前部署版本号（每次重新部署时修改这里，用于自动检测更新）
-  var APP_VER = '20260916_1030';
+  var APP_VER = '20260916_1130';
 
   var UI = {
     view: 'dashboard',
@@ -12942,8 +12942,8 @@ var DB = (function () {
           inp('rPhone', '手机号', '', 'text', 'placeholder="选填"') +
           '<div class="auth-label">注册身份</div>' +
           '<div class="role-pick" id="rolePick">' +
-            '<button type="button" class="role-opt' + (firstUser ? ' on' : '') + '" data-role="student"><b>学生</b><span>可查询库存、借用与归还物料</span></button>' +
-            '<button type="button" class="role-opt' + (firstUser ? '' : '') + '" data-role="admin"><b>管理员</b><span>' + (firstUser ? '（首个注册账号自动为管理员）' : '需填写管理员注册码') + '</span></button>' +
+            '<button type="button" class="role-opt on" data-role="student"><b>学生</b><span>可查询库存、借用与归还物料</span></button>' +
+            '<button type="button" class="role-opt" data-role="admin"><b>管理员</b><span>' + (firstUser ? '（首个注册账号自动为管理员）' : '需填写管理员注册码') + '</span></button>' +
           '</div>' +
           '<div id="rCodeWrap" style="display:none">' +
             inp('rCode', '管理员注册码 *', '', 'text', 'placeholder="向现有管理员获取"') +
@@ -13023,7 +13023,8 @@ var DB = (function () {
         if (typeof r === 'string') { err.textContent = r; return; }
         onLoggedIn();
       } else {
-        var role = rp ? rp.querySelector('.role-opt.on').getAttribute('data-role') : 'student';
+        var onOpt = rp ? rp.querySelector('.role-opt.on') : null;
+        var role = onOpt ? onOpt.getAttribute('data-role') : 'student';
         var data = {
           name: $('rName').value.trim(), sid: $('rSid').value.trim(), phone: $('rPhone').value.trim(),
           role: role,
