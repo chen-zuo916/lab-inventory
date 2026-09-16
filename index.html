@@ -10443,6 +10443,17 @@ input,textarea{
   .content{padding-top:12px;}
 }
 
+/* ============ 顶栏返回上一页按钮 + 修复面包屑多余斜杠 ============ */
+.app-topbar-breadcrumb span::before{content:'' !important;margin:0 !important;}
+.app-topbar-breadcrumb .sep::before{content:'' !important;}
+.topbar-back{
+  flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;
+  height:34px;padding:0 12px;border-radius:17px;border:1px solid #fbcfe8;
+  background:#fdf2f8;color:#be185d;font-size:12.5px;font-weight:600;cursor:pointer;
+  white-space:nowrap;-webkit-tap-highlight-color:transparent;
+}
+.topbar-back:active{transform:scale(.96);background:#fce7f3;}
+
 </style>
 </head>
 <body>
@@ -10488,6 +10499,7 @@ input,textarea{
       <button class="topbar-hamburger" onclick="toggleSidebar()" title="菜单">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
       </button>
+      <button class="topbar-back" id="btnBackView" onclick="goBackView()" hidden title="返回上一页">← 返回</button>
       <div class="topbar-left">
         <div class="app-topbar-breadcrumb">
           <span>工作台</span>
@@ -11714,7 +11726,7 @@ var DB = (function () {
   var S = function () { return DB.state; };
 
   // 当前部署版本号（每次重新部署时修改这里，用于自动检测更新）
-  var APP_VER = '20260914_1700';
+  var APP_VER = '20260916_1030';
 
   var UI = {
     view: 'dashboard',
@@ -11800,7 +11812,29 @@ var DB = (function () {
     profile: ['个人中心', '查看与完善个人信息、修改密码'],
     settings: ['系统设置', '机器人社团信息、字典维护与数据备份']
   };
+  var VIEW_STACK = [];      // 页面访问历史（返回上一页用）
+  var GOING_BACK = false;
+  function updateBackBtn() {
+    var b = $('btnBackView'); if (!b) return;
+    b.hidden = !VIEW_STACK.length;
+    if (VIEW_STACK.length) {
+      var prev = VIEW_STACK[VIEW_STACK.length - 1];
+      b.textContent = '← ' + (VIEW_META[prev] || ['工作台'])[0];
+    }
+  }
+  function goBackView() {
+    if (!VIEW_STACK.length) return;
+    var prev = VIEW_STACK.pop();
+    GOING_BACK = true;
+    switchView(prev);
+    updateBackBtn();
+  }
+  window.goBackView = goBackView;
   function switchView(v) {
+    if (UI.view && v !== UI.view) {
+      if (GOING_BACK) { GOING_BACK = false; }
+      else { VIEW_STACK.push(UI.view); if (VIEW_STACK.length > 30) VIEW_STACK.shift(); }
+    }
     UI.view = v;
     document.querySelectorAll('.nav-item').forEach(function (b) {
       b.classList.toggle('active', b.getAttribute('data-view') === v);
@@ -11818,6 +11852,7 @@ var DB = (function () {
         : v === 'members' ? '搜索姓名 / 学号 / 手机号…'
           : v === 'profile' ? '个人中心，可修改资料与密码'
             : '搜索物料名称 / 编号 / 规格 / 供应商…';
+    updateBackBtn();
     render();
   }
 
